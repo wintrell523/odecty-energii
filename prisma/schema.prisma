@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum MeterType {
+  ELECTRICITY
+  COLD_WATER
+  HOT_WATER
+  HEAT
+}
+
+enum Unit {
+  KWH
+  M3
+  GJ
+}
+
+model Meter {
+  id        Int       @id @default(autoincrement())
+  type      MeterType
+  name      String
+  unit      Unit
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  readings  Reading[]
+  tariffs   Tariff[]
+}
+
+model Reading {
+  id      Int      @id @default(autoincrement())
+  meterId Int
+  meter   Meter    @relation(fields: [meterId], references: [id], onDelete: Cascade)
+  date    DateTime
+  value   Decimal
+  note    String?
+
+  @@index([meterId, date])
+}
+
+model Tariff {
+  id         Int      @id @default(autoincrement())
+  meterId    Int
+  meter      Meter    @relation(fields: [meterId], references: [id], onDelete: Cascade)
+  validFrom  DateTime
+  unitPrice  Decimal
+  monthlyFee Decimal  @default(0)
+  note       String?
+
+  @@index([meterId, validFrom])
+}

@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Odečty energií
 
-## Getting Started
+Lokální webová aplikace pro evidenci odečtů energií — náhrada za ruční vedení v Excelu.
 
-First, run the development server:
+## Co umí
+
+- Eviduje libovolný počet měřičů (elektřina, studená/teplá voda, teplo) a jejich stavy v čase.
+- Spotřebu mezi dvěma odečty počítá automaticky (rozdíl proti předchozímu odečtu).
+- U tepla zobrazuje **přepočet GJ → kWh** (1 GJ ≈ 277,78 kWh).
+- Sazby s historií platnosti (každá s cenou za jednotku a měsíčním paušálem). Cena za období respektuje změny sazby uprostřed období.
+- Dashboard se souhrnem aktuálního měsíce pro každý měřič.
+- Souhrny za kalendářní rok s grafem měsíční spotřeby.
+- Export všech odečtů do CSV (UTF-8 BOM, otevíratelné v Excelu CZ).
+
+## Spuštění
+
+Předpoklady: Node.js 20+.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npx prisma migrate deploy   # vytvoří prázdnou DB při prvním běhu
+npm run db:seed             # založí 4 výchozí měřiče (přeskočí pokud existují)
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Pro produkční režim:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Datový soubor
 
-## Learn More
+Všechna data jsou v `prisma/dev.db` (SQLite). Pro zálohu stačí zkopírovat tento soubor. Soubor je `.gitignored`. Připojení k databázi je nakonfigurované v `prisma.config.ts` (Prisma 7 nepoužívá `url` v `schema.prisma`) — žádné `.env` se pro běh aplikace nevyžaduje.
 
-To learn more about Next.js, take a look at the following resources:
+## Struktura projektu
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+prisma.config.ts       # Prisma 7 konfigurace (datasource URL, cesta k migracím)
+prisma/
+  schema.prisma        # datový model (Meter, Reading, Tariff)
+  seed.ts              # výchozí měřiče
+src/
+  generated/prisma/    # vygenerovaný Prisma client (gitignored)
+  app/                 # Next.js App Router stránky a server actions
+  components/          # MeterForm, ReadingForm, ConsumptionChart, …
+  lib/
+    calculations.ts    # spotřeba, cena za období, měsíční agregace
+    format.ts          # cs-CZ formátování čísel, dat, jednotek
+    schemas.ts         # Zod schémata pro vstupy
+    db.ts              # Prisma client + better-sqlite3 adapter (singleton)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Skripty
 
-## Deploy on Vercel
+| příkaz | popis |
+|---|---|
+| `npm run dev` | spustí dev server |
+| `npm run build` | produkční build |
+| `npm start` | spustí produkční build |
+| `npm test` | spustí unit testy (vitest) |
+| `npm run db:migrate` | aplikuje Prisma migrace ve vývoji |
+| `npm run db:seed` | založí výchozí měřiče |
+| `npm run db:studio` | otevře Prisma Studio nad lokální DB |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Pracovní postup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Měřiče** — typicky se nastaví jednou (4 výchozí jsou předvyplněné).
+2. **Sazby** — pro každý měřič přidej alespoň jednu sazbu s datem platnosti. Při změně ceny přidej další sazbu — historická období se přepočítají správně.
+3. **Odečty** — pravidelně (2–4× měsíčně) zapisuj stav z displeje měřiče.
+4. **Přehled / Souhrny** — sleduj spotřebu a odhad ceny.
+
+## Poznámky k výpočtu
+
+- **Spotřeba** mezi odečty = rozdíl stavů (předpokládá se kumulativní měřič).
+- **Cena za období** = spotřeba × sazba + měsíční paušál × (počet dní / 30,4375). Když do období spadá změna sazby, spotřeba se mezi segmenty rozdělí lineárně podle dnů.
+- **Mimo známá data** (před prvním nebo po posledním odečtu) — aplikace neextrapoluje; spotřeba je 0 v tom úseku.

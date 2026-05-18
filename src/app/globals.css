@@ -1,26 +1,465 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* =========================================================================
+   Dark neutral theme — zinc base + cyan brand + per-meter accents
+   ========================================================================= */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Surfaces */
+  --color-night: #09090b;        /* zinc-950 — page background */
+  --color-night-deep: #050507;   /* darker for sticky header/footer */
+  --color-surface: #18181b;      /* zinc-900 — cards */
+  --color-surface-2: #27272a;    /* zinc-800 — elevated/hover */
+  --color-rule: #27272a;         /* zinc-800 — primary borders */
+  --color-rule-soft: #1f1f23;    /* in between zinc-900 and zinc-800 */
+
+  /* Text */
+  --color-ink: #fafafa;          /* zinc-50 */
+  --color-ink-soft: #d4d4d8;     /* zinc-300 */
+  --color-ink-muted: #a1a1aa;    /* zinc-400 */
+  --color-ink-faint: #52525b;    /* zinc-600 */
+
+  /* Brand accent — used sparingly (focus rings, links, brand dot) */
+  --color-brand: #06b6d4;        /* cyan-500 */
+  --color-brand-hover: #22d3ee;  /* cyan-400 */
+  --color-brand-soft: rgba(6, 182, 212, 0.18);
+
+  /* Meter accents — vivid on dark zinc */
+  --color-elec: #fbbf24;         /* amber-400 */
+  --color-cold: #38bdf8;         /* sky-400 */
+  --color-hot: #fb7185;          /* rose-400 */
+  --color-heat: #a78bfa;         /* violet-400 */
+
+  /* Feedback */
+  --color-danger: #f87171;       /* red-400 */
+  --color-danger-soft: rgba(248, 113, 113, 0.12);
+
+  /* Type */
+  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Geometry */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* -------------------------------------------------------------------------
+   Body chrome
+   ------------------------------------------------------------------------- */
+
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-night);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-feature-settings: "kern", "liga", "calt";
+  -webkit-font-smoothing: antialiased;
 }
+
+/* -------------------------------------------------------------------------
+   Typography utilities (kept semantic — restyled for sans-serif)
+   ------------------------------------------------------------------------- */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.numerals {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.smallcaps {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
+.rule-dashed {
+  border-top: 1px dashed var(--color-rule);
+  height: 0;
+}
+
+/* Leader row — kept for MeterCard layout */
+.leader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.leader > .leader-fill {
+  flex: 1;
+  border-bottom: 1px dotted var(--color-rule);
+  transform: translateY(-3px);
+  min-width: 1rem;
+}
+
+/* -------------------------------------------------------------------------
+   Form controls
+   ------------------------------------------------------------------------- */
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+textarea,
+select {
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  color: var(--color-ink);
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-ink-faint);
+}
+
+input:hover:not(:focus),
+textarea:hover:not(:focus),
+select:hover:not(:focus) {
+  border-color: var(--color-ink-faint);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-soft);
+  background: var(--color-surface-2);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'><path fill='none' stroke='%23a1a1aa' stroke-width='1.5' stroke-linecap='round' d='M3 5.5l4 4 4-4'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.25rem;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  background: var(--color-surface);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  padding: 0;
+}
+input[type="checkbox"]:checked {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+}
+input[type="checkbox"]:checked::after {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  background-color: var(--color-night);
+  clip-path: polygon(14% 44%, 0 60%, 40% 100%, 100% 20%, 84% 6%, 38% 70%);
+}
+
+.field-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+  color: var(--color-ink-soft);
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
+
+/* -------------------------------------------------------------------------
+   Tables
+   ------------------------------------------------------------------------- */
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.data th,
+table.data td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--color-rule-soft);
+  text-align: left;
+  vertical-align: top;
+}
+table.data thead th {
+  border-bottom: 1px solid var(--color-rule);
+  background: rgba(255, 255, 255, 0.015);
+}
+table.data th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+table.data tbody tr {
+  transition: background 0.15s ease;
+}
+table.data tbody tr:hover {
+  background: var(--color-surface-2);
+}
+table.data tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* -------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.06s;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-ink);
+  color: var(--color-night);
+  border-color: var(--color-ink);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-2);
+  border-color: var(--color-ink-faint);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink-soft);
+  border-color: transparent;
+  padding: 0.4rem 0.6rem;
+}
+.btn-ghost:hover:not(:disabled) {
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+/* Filter chip (pill toggle) */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-rule);
+  background: var(--color-surface);
+  font-size: 0.82rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.chip:hover {
+  border-color: var(--color-ink-faint);
+  color: var(--color-ink);
+}
+.chip.is-active {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-night);
+  font-weight: 500;
+}
+
+/* -------------------------------------------------------------------------
+   Card
+   ------------------------------------------------------------------------- */
+
+.card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
+.card-tight {
+  padding: 1rem 1.25rem;
+}
+
+/* Card with a subtle top-edge tint from --accent (set inline per meter) */
+.card-accent {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--accent, var(--color-brand)) 12%, transparent) 0%,
+      transparent 28%
+    ),
+    var(--color-surface);
+  border-top: 1px solid color-mix(in oklab, var(--accent, var(--color-brand)) 40%, var(--color-rule));
+}
+
+/* -------------------------------------------------------------------------
+   Accent dot (used in headings, table rows, filter chips)
+   ------------------------------------------------------------------------- */
+
+.accent-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--dot, var(--color-brand));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--dot, var(--color-brand)) 22%, transparent);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* -------------------------------------------------------------------------
+   Section heading
+   ------------------------------------------------------------------------- */
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.section-head h1,
+.section-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.section-sub {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+/* -------------------------------------------------------------------------
+   Nav link — minimal underline
+   ------------------------------------------------------------------------- */
+
+.nav-link {
+  display: inline-block;
+  padding: 0.4rem 0.1rem;
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.nav-link:hover,
+.nav-link.is-active {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-ink-faint);
+}
+
+/* -------------------------------------------------------------------------
+   Stagger reveal
+   ------------------------------------------------------------------------- */
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-in {
+  animation: card-in 0.4s cubic-bezier(0.22, 0.9, 0.32, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+/* -------------------------------------------------------------------------
+   Inline link
+   ------------------------------------------------------------------------- */
+
+a.ink-link {
+  color: var(--color-brand-hover);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklab, var(--color-brand) 35%, transparent);
+  transition: border-color 0.15s;
+}
+a.ink-link:hover {
+  border-bottom-color: var(--color-brand-hover);
+}
+
+/* -------------------------------------------------------------------------
+   Selection
+   ------------------------------------------------------------------------- */
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-ink);
+}
+
+/* -------------------------------------------------------------------------
+   Text color utilities (kept names from prior theme)
+   ------------------------------------------------------------------------- */
+
+.text-ink { color: var(--color-ink); }
+.text-ink-soft { color: var(--color-ink-soft); }
+.text-ink-muted { color: var(--color-ink-muted); }
+.text-ink-faint { color: var(--color-ink-faint); }
