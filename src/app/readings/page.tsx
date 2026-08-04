@@ -157,9 +157,9 @@ export default async function ReadingsPage({
                     {formatDate(r.date)}
                   </td>
                   <td>
-                    <span className="flex items-center gap-2">
+                    <span className="grid w-36 grid-cols-[0.45rem_minmax(0,1fr)_1rem] items-start gap-2">
                       <span
-                        className="accent-dot"
+                        className="accent-dot mt-[0.4rem]"
                         style={{
                           ["--dot" as string]: `var(${accent.cssVar})`,
                           width: "0.45rem",
@@ -167,8 +167,11 @@ export default async function ReadingsPage({
                         }}
                         aria-hidden="true"
                       />
-                      <span className="text-ink">{r.meterName}</span>
-                      <span className="text-ink-muted text-xs">
+                      <span className="min-w-0 text-ink">{r.meterName}</span>
+                      <span
+                        className="text-center text-ink-muted text-xs leading-5"
+                        aria-hidden="true"
+                      >
                         {meterTypeIcon(r.meterType)}
                       </span>
                     </span>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { withConsumption } from "@/lib/calculations";
 import { formatDate, unitLabel, meterTypeLabel, type MeterType, type Unit } from "@/lib/format";
+import { parseYear } from "@/lib/years";
 
 function csvEscape(v: string | number | null): string {
   if (v == null) return "";
@@ -18,17 +19,34 @@ function csvNumber(n: number | null, decimals = 3): string {
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const yearParam = url.searchParams.get("year");
-  const year = yearParam ? Number(yearParam) : null;
+  const year = parseYear(yearParam);
+  if (yearParam !== null && year === null) {
+    return NextResponse.json({ error: "Neplatný rok" }, { status: 400 });
+  }
 
-  const where = year
-    ? { date: { gte: new Date(year, 0, 1), lt: new Date(year + 1, 0, 1) } }
+  const periodStart = year ? new Date(year, 0, 1) : null;
+  const periodEnd = year ? new Date(year + 1, 0, 1) : null;
+  const where = periodStart && periodEnd
+    ? { date: { gte: periodStart, lt: periodEnd } }
     : undefined;
 
-  const readings = await prisma.reading.findMany({
+  const selectedReadings = await prisma.reading.findMany({
     where,
     orderBy: [{ meterId: "asc" }, { date: "asc" }],
     include: { meter: true },
   });
+
+  // Include each affected meter's history so the first exported row can show
+  // consumption relative to its actual preceding reading.
+  const meterIds = [...new Set(selectedReadings.map((reading) => reading.meterId))];
+  const precedingReadings = periodStart && meterIds.length > 0
+    ? await prisma.reading.findMany({
+        where: { meterId: { in: meterIds }, date: { lt: periodStart } },
+        orderBy: [{ meterId: "asc" }, { date: "asc" }],
+        include: { meter: true },
+      })
+    : [];
+  const readings = [...precedingReadings, ...selectedReadings];
 
   // We need previous reading for consumption — fetch all per meter and filter for display
   const byMeter = new Map<number, typeof readings>();
@@ -49,6 +67,7 @@ export async function GET(req: NextRequest) {
     );
     for (let i = 0; i < enriched.length; i++) {
       const e = enriched[i];
+      if (periodStart && e.date < periodStart) continue;
       rows.push([
         formatDate(e.date),
         m.name,
@@ -64,7 +83,7 @@ export async function GET(req: NextRequest) {
 
   const csv = rows.map((r) => r.map(csvEscape).join(";")).join("\r\n");
   // UTF-8 BOM so Excel opens CZ diakritika correctly
-  const body = "﻿" + csv;
+  const body = "\uFEFF" + csv;
 
   const filename = year ? `odecty-${year}.csv` : "odecty.csv";
 

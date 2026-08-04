@@ -18,6 +18,7 @@ import {
 } from "@/lib/calculations";
 import { accentFor } from "@/lib/theme";
 import ConsumptionChart from "@/components/ConsumptionChart";
+import { parseYear } from "@/lib/years";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,8 @@ export default async function ReportsPage({
   searchParams: Promise<{ year?: string }>;
 }) {
   const { year: yearParam } = await searchParams;
-  const year = yearParam ? Number(yearParam) : new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
+  const year = parseYear(yearParam) ?? currentYear;
   const from = new Date(year, 0, 1);
   const to = new Date(year + 1, 0, 1);
 
@@ -46,7 +48,7 @@ export default async function ReportsPage({
   });
 
   const allReadings = await prisma.reading.findMany({ select: { date: true } });
-  const years = new Set<number>([year, new Date().getFullYear()]);
+  const years = new Set<number>([year, currentYear]);
   for (const r of allReadings) years.add(r.date.getFullYear());
   const yearList = Array.from(years).sort((a, b) => b - a);
 
@@ -63,6 +65,17 @@ export default async function ReportsPage({
     }));
 
     const monthly = monthlyConsumption(readings, from, to);
+    const monthlyWithPrices = monthly.map((month) => {
+      const monthEnd = new Date(
+        month.month.getFullYear(),
+        month.month.getMonth() + 1,
+        1,
+      );
+      return {
+        ...month,
+        price: priceForPeriod(readings, tariffs, month.month, monthEnd)?.total ?? null,
+      };
+    });
     const total = priceForPeriod(readings, tariffs, from, to);
 
     return {
@@ -70,7 +83,7 @@ export default async function ReportsPage({
       name: m.name,
       type: m.type as MeterType,
       unit: m.unit as Unit,
-      monthly,
+      monthly: monthlyWithPrices,
       total,
     };
   });
@@ -241,6 +254,7 @@ export default async function ReportsPage({
                     data={r.monthly.map((m) => ({
                       label: MONTH_NAMES_SHORT[m.month.getMonth()],
                       consumption: Number(m.consumption.toFixed(3)),
+                      price: m.price == null ? null : Number(m.price.toFixed(2)),
                     }))}
                     unit={r.unit}
                     color={accent.hex}

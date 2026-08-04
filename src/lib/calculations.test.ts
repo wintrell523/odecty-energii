@@ -112,4 +112,15 @@ describe("monthlyConsumption", () => {
       expect(m.consumption).toBeLessThan(40);
     }
   });
+
+  it("does not include the first month after an end-of-year boundary", () => {
+    const readings = [
+      { id: 1, date: d("2026-01-01"), value: 0 },
+      { id: 2, date: d("2027-01-01"), value: 365 },
+    ];
+    const months = monthlyConsumption(readings, d("2026-01-01"), d("2027-01-01"));
+
+    expect(months).toHaveLength(12);
+    expect(months.at(-1)?.month.getMonth()).toBe(11);
+  });
 });

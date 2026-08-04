@@ -1,4 +1,14 @@
 import { z } from "zod";
+import { isIsoDate } from "./format";
+
+export function zodErrors(error: z.ZodError): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const issue of error.issues) {
+    const key = issue.path.map(String).join(".") || "_form";
+    if (!errors[key]) errors[key] = issue.message;
+  }
+  return errors;
+}
 
 export const meterTypeEnum = z.enum(["ELECTRICITY", "COLD_WATER", "HOT_WATER", "HEAT"]);
 export const unitEnum = z.enum(["KWH", "M3", "GJ"]);
@@ -28,9 +38,15 @@ const numeric = z
     return n;
   });
 
+const isoDate = z
+  .string()
+  .trim()
+  .min(1, "Datum je povinné")
+  .refine(isIsoDate, "Neplatné datum");
+
 export const readingInput = z.object({
   meterId: z.coerce.number().int().positive(),
-  date: z.string().min(1, "Datum je povinné"),
+  date: isoDate,
   value: numeric,
   note: z.string().max(200).optional().or(z.literal("")),
 });
@@ -38,7 +54,7 @@ export type ReadingInput = z.infer<typeof readingInput>;
 
 export const tariffInput = z.object({
   meterId: z.coerce.number().int().positive(),
-  validFrom: z.string().min(1, "Datum platnosti je povinné"),
+  validFrom: isoDate,
   unitPrice: numeric,
   monthlyFee: numeric.optional(),
   note: z.string().max(200).optional().or(z.literal("")),

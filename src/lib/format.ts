@@ -86,3 +86,11 @@ export function parseIsoDate(s: string): Date {
   const [y, m, day] = s.split("-").map(Number);
   return new Date(y, m - 1, day);
 }
+
+/** Validates a date-only value before it is converted for storage. */
+export function isIsoDate(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+
+  const date = parseIsoDate(s);
+  return !Number.isNaN(date.getTime()) && toIsoDate(date) === s;
+}

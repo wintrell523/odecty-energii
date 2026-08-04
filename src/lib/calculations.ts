@@ -188,11 +188,17 @@ export function monthlyConsumption(
 ): { month: Date; consumption: number }[] {
   const months: { month: Date; consumption: number }[] = [];
   const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
-  const endCursor = new Date(to.getFullYear(), to.getMonth(), 1);
-  while (cursor <= endCursor) {
+  const periodEndBoundary = new Date(
+    to.getFullYear(),
+    to.getMonth(),
+    to.getDate(),
+  );
+  while (cursor < periodEndBoundary) {
     const monthStart = new Date(cursor);
     const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-    const cons = consumptionBetween(readings, monthStart, monthEnd);
+    const periodStart = monthStart < from ? from : monthStart;
+    const periodEnd = monthEnd > periodEndBoundary ? periodEndBoundary : monthEnd;
+    const cons = consumptionBetween(readings, periodStart, periodEnd);
     months.push({ month: new Date(cursor), consumption: cons ?? 0 });
     cursor.setMonth(cursor.getMonth() + 1);
   }

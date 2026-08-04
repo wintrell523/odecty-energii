@@ -325,6 +325,10 @@ table.data tbody tr:last-child td {
   color: var(--color-night);
   font-weight: 500;
 }
+button.chip {
+  cursor: pointer;
+  font: inherit;
+}
 
 /* -------------------------------------------------------------------------
    Card
