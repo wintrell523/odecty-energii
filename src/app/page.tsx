@@ -6,7 +6,7 @@ import {
   type ReadingRow,
   type TariffRow,
 } from "@/lib/calculations";
-import type { MeterType, Unit } from "@/lib/format";
+import { formatPrice, type MeterType, type Unit } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -58,27 +58,19 @@ export default async function Dashboard() {
     year: "numeric",
   });
 
+  const pricedCards = cards.filter((c) => c.monthPrice != null);
+  const monthTotal = pricedCards.reduce((sum, c) => sum + c.monthPrice!, 0);
+
   return (
-    <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="section-head">
-          <div className="space-y-1">
-            <p className="smallcaps text-[0.68rem] text-ink-muted">
-              aktuální období
-            </p>
-            <h1 className="display">Přehled</h1>
-            <p className="section-sub">{monthLabel}</p>
-          </div>
-          <div className="flex gap-2.5 items-center">
-            <Link href="/reports" className="btn btn-secondary">
-              Souhrny
-            </Link>
-            <Link href="/readings/new" scroll={false} className="btn btn-primary">
-              + Nový odečet
-            </Link>
-          </div>
+    <div className="space-y-6">
+      <header className="section-head">
+        <div>
+          <h1 className="display">Přehled</h1>
+          <p className="section-sub first-letter:uppercase">{monthLabel}</p>
         </div>
-        <div className="rule-dashed" />
+        <Link href="/readings/new" scroll={false} className="btn btn-primary">
+          + Nový odečet
+        </Link>
       </header>
 
       {meters.length === 0 ? (
@@ -92,14 +84,11 @@ export default async function Dashboard() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {cards.map((c, i) => (
-            <div
-              key={c.id}
-              className="stagger-in"
-              style={{ ["--i" as string]: i }}
-            >
+        <div className="grid gap-3 lg:grid-cols-[1fr_15rem] lg:items-start">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {cards.map((c) => (
               <MeterCard
+                key={c.id}
                 meter={{
                   id: c.id,
                   name: c.name,
@@ -111,8 +100,34 @@ export default async function Dashboard() {
                 monthConsumption={c.monthConsumption}
                 monthPrice={c.monthPrice}
               />
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <section className="card" style={{ padding: "1rem 1.1rem" }}>
+            <h2 className="section-sub">Tento měsíc celkem</h2>
+            {pricedCards.length === 0 ? (
+              <p className="mt-2 text-sm text-ink-muted">
+                Bez sazeb se cena nepočítá.
+              </p>
+            ) : (
+              <>
+                <p className="display numerals mt-1.5 mb-3 text-3xl">
+                  {formatPrice(monthTotal)}
+                </p>
+                <ul className="text-sm">
+                  {pricedCards.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex justify-between gap-3 border-t border-rule py-1.5"
+                    >
+                      <span className="text-ink-muted truncate">{c.name}</span>
+                      <span className="numerals">{formatPrice(c.monthPrice!)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
         </div>
       )}
     </div>
