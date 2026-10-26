@@ -33,7 +33,8 @@ export default async function NewReading({
     );
   }
 
-  const defaultMeterId = meter ? Number(meter) : undefined;
+  // Ignore an unknown or inactive meter, so the form does not silently pick the first one.
+  const defaultMeterId = meters.find((m) => String(m.id) === meter)?.id;
 
   return (
     <div className="space-y-6">
