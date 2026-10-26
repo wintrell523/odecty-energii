@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
   formatDate,
@@ -11,7 +12,6 @@ import {
 import { accentFor } from "@/lib/theme";
 import { deleteTariff } from "@/app/actions/tariffs";
 import DeleteButton from "@/components/DeleteButton";
-import TariffForm from "@/components/TariffForm";
 
 export const dynamic = "force-dynamic";
 
@@ -44,31 +44,12 @@ export default async function TariffsPage() {
               historie tarifů — co kdy platilo, to se počítá
             </p>
           </div>
+          <Link href="/tariffs/new" scroll={false} className="btn btn-primary">
+            + Nová sazba
+          </Link>
         </div>
         <div className="rule-dashed" />
       </header>
-
-      <section className="card max-w-2xl">
-        <h2
-          className="display mb-1"
-          style={{ fontSize: "1.4rem", fontWeight: 500 }}
-        >
-          Nová sazba
-        </h2>
-        <p className="section-sub mb-6">platí od zadaného data dál</p>
-        <TariffForm
-          meters={meters.map((m) => ({
-            id: m.id,
-            name: m.name,
-            type: m.type as MeterType,
-            unit: m.unit as Unit,
-          }))}
-        />
-        <p className="text-xs text-ink-muted mt-5 pt-4 border-t border-rule-soft">
-          Sazba platí od zadaného data, dokud není zadána novější. Pro období
-          před první sazbou se použije nejstarší.
-        </p>
-      </section>
 
       <div className="space-y-5">
         {meters.map((meter) => {

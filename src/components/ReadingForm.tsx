@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useCloseModal } from "@/components/Modal";
 import {
   createReading,
   updateReading,
@@ -27,18 +27,14 @@ type Props = {
     note: string | null;
   };
   defaultMeterId?: number;
-  redirectTo?: string;
-  closeOnSuccess?: boolean;
 };
 
 export default function ReadingForm({
   meters,
   initial,
   defaultMeterId,
-  redirectTo,
-  closeOnSuccess = false,
 }: Props) {
-  const router = useRouter();
+  const closeModal = useCloseModal();
   const meterSelect = useRef<HTMLSelectElement>(null);
   const action = initial ? updateReading.bind(null, initial.id) : createReading;
   const [state, formAction, pending] = useActionState<
@@ -59,10 +55,8 @@ export default function ReadingForm({
   }, [initial, defaultMeterId, meters]);
 
   useEffect(() => {
-    if (!state?.ok) return;
-    if (closeOnSuccess) router.back();
-    else if (redirectTo) router.push(redirectTo);
-  }, [state, redirectTo, closeOnSuccess, router]);
+    if (state?.ok) closeModal?.();
+  }, [state, closeModal]);
 
   const err = (k: string) =>
     state && !state.ok ? state.errors[k] : undefined;
@@ -147,12 +141,8 @@ export default function ReadingForm({
               ? "Uložit změny"
               : "Zapsat odečet"}
         </button>
-        {(redirectTo || closeOnSuccess) && (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => closeOnSuccess ? router.back() : router.replace(redirectTo!)}
-          >
+        {closeModal && (
+          <button type="button" className="btn btn-secondary" onClick={closeModal}>
             Zrušit
           </button>
         )}

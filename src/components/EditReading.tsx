@@ -5,10 +5,8 @@ import ReadingForm from "@/components/ReadingForm";
 
 export default async function EditReading({
   params,
-  closeOnSuccess = false,
 }: {
   params: Promise<{ id: string }>;
-  closeOnSuccess?: boolean;
 }) {
   const { id } = await params;
   const [reading, meters] = await Promise.all([
@@ -40,8 +38,6 @@ export default async function EditReading({
             value: Number(reading.value),
             note: reading.note,
           }}
-          redirectTo={closeOnSuccess ? undefined : "/readings"}
-          closeOnSuccess={closeOnSuccess}
         />
       </div>
     </div>

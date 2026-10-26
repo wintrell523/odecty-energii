@@ -1,12 +1,12 @@
 import NewReading from "@/components/NewReading";
-import ReadingModal from "@/components/ReadingModal";
+import Modal from "@/components/Modal";
 
 export default function NewReadingModal(props: {
   searchParams: Promise<{ meter?: string }>;
 }) {
   return (
-    <ReadingModal>
-      <NewReading {...props} closeOnSuccess />
-    </ReadingModal>
+    <Modal label="Nový odečet">
+      <NewReading {...props} />
+    </Modal>
   );
 }

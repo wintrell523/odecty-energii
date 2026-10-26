@@ -1,12 +1,12 @@
 import EditReading from "@/components/EditReading";
-import ReadingModal from "@/components/ReadingModal";
+import Modal from "@/components/Modal";
 
 export default function EditReadingModal(props: {
   params: Promise<{ id: string }>;
 }) {
   return (
-    <ReadingModal label="Upravit odečet">
-      <EditReading {...props} closeOnSuccess />
-    </ReadingModal>
+    <Modal label="Upravit odečet">
+      <EditReading {...props} />
+    </Modal>
   );
 }

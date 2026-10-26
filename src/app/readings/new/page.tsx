@@ -1,5 +1,5 @@
 import NewReading from "@/components/NewReading";
-import ReadingModal from "@/components/ReadingModal";
+import Modal from "@/components/Modal";
 import ReadingsPage from "@/app/readings/page";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +10,9 @@ export default function NewReadingPage(props: {
   return (
     <>
       <ReadingsPage searchParams={Promise.resolve({})} />
-      <ReadingModal returnTo="/readings">
+      <Modal label="Nový odečet" returnTo="/readings">
         <NewReading {...props} />
-      </ReadingModal>
+      </Modal>
     </>
   );
 }

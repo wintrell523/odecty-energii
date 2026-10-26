@@ -5,10 +5,8 @@ import ReadingForm from "@/components/ReadingForm";
 
 export default async function NewReading({
   searchParams,
-  closeOnSuccess = false,
 }: {
   searchParams: Promise<{ meter?: string }>;
-  closeOnSuccess?: boolean;
 }) {
   const { meter } = await searchParams;
   const meters = await prisma.meter.findMany({
@@ -58,8 +56,6 @@ export default async function NewReading({
             unit: m.unit as Unit,
           }))}
           defaultMeterId={defaultMeterId}
-          redirectTo={closeOnSuccess ? undefined : "/readings"}
-          closeOnSuccess={closeOnSuccess}
         />
       </div>
     </div>

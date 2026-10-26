@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useCloseModal } from "@/components/Modal";
 import {
   createMeter,
   updateMeter,
@@ -17,22 +18,22 @@ type Props = {
     unit: Unit;
     active: boolean;
   };
-  onSuccess?: () => void;
 };
 
 const TYPES: MeterType[] = ["ELECTRICITY", "COLD_WATER", "HOT_WATER", "HEAT"];
 const UNITS: Unit[] = ["KWH", "M3", "GJ"];
 
-export default function MeterForm({ initial, onSuccess }: Props) {
+export default function MeterForm({ initial }: Props) {
   const action = initial ? updateMeter.bind(null, initial.id) : createMeter;
   const [state, formAction, pending] = useActionState<
     MeterActionResult | null,
     FormData
   >(action, null);
 
-  if (state?.ok && onSuccess) {
-    queueMicrotask(onSuccess);
-  }
+  const closeModal = useCloseModal();
+  useEffect(() => {
+    if (state?.ok) closeModal?.();
+  }, [state, closeModal]);
 
   const err = (k: string) =>
     state && !state.ok ? state.errors[k] : undefined;
@@ -94,6 +95,11 @@ export default function MeterForm({ initial, onSuccess }: Props) {
         <button className="btn btn-primary" disabled={pending}>
           {pending ? "Ukládám…" : initial ? "Uložit" : "Přidat měřič"}
         </button>
+        {closeModal && (
+          <button type="button" className="btn btn-secondary" onClick={closeModal}>
+            Zrušit
+          </button>
+        )}
       </div>
     </form>
   );

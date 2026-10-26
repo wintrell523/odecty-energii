@@ -1,5 +1,5 @@
 import EditReading from "@/components/EditReading";
-import ReadingModal from "@/components/ReadingModal";
+import Modal from "@/components/Modal";
 import ReadingsPage from "@/app/readings/page";
 
 export const dynamic = "force-dynamic";
@@ -10,9 +10,9 @@ export default function EditReadingPage(props: {
   return (
     <>
       <ReadingsPage searchParams={Promise.resolve({})} />
-      <ReadingModal label="Upravit odečet" returnTo="/readings">
+      <Modal label="Upravit odečet" returnTo="/readings">
         <EditReading {...props} />
-      </ReadingModal>
+      </Modal>
     </>
   );
 }

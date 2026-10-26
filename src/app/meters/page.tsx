@@ -9,7 +9,6 @@ import {
 import { accentFor } from "@/lib/theme";
 import { deleteMeter } from "@/app/actions/meters";
 import DeleteButton from "@/components/DeleteButton";
-import MeterForm from "@/components/MeterForm";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +31,8 @@ export default async function MetersPage() {
               elektřina, voda, teplo · co měříš, to počítáš
             </p>
           </div>
-          <Link href="/readings/new" scroll={false} className="btn btn-secondary">
-            + Nový odečet
+          <Link href="/meters/new" scroll={false} className="btn btn-primary">
+            + Nový měřič
           </Link>
         </div>
         <div className="rule-dashed" />
@@ -105,23 +104,12 @@ export default async function MetersPage() {
             {meters.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center text-ink-muted py-8">
-                  Žádné měřiče. Přidej první níže.
+                  Žádné měřiče. Přidej první tlačítkem Nový měřič.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-      </section>
-
-      <section className="card max-w-2xl">
-        <h2
-          className="display mb-1"
-          style={{ fontSize: "1.4rem", fontWeight: 500 }}
-        >
-          Přidat měřič
-        </h2>
-        <p className="section-sub mb-6">vyplň název, typ a jednotku</p>
-        <MeterForm />
       </section>
     </div>
   );

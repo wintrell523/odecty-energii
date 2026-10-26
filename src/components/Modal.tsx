@@ -1,16 +1,26 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ReadingModal({ children, label = "Nový odečet", returnTo }: {
+const CloseModal = createContext<(() => void) | null>(null);
+
+/** Closes the surrounding modal; null when the caller is not inside one. */
+export function useCloseModal() {
+  return useContext(CloseModal);
+}
+
+export default function Modal({ children, label, returnTo }: {
   children: React.ReactNode;
-  label?: string;
+  label: string;
   returnTo?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const router = useRouter();
-  const close = () => returnTo ? router.replace(returnTo) : router.back();
+  const close = useCallback(
+    () => (returnTo ? router.replace(returnTo) : router.back()),
+    [returnTo, router],
+  );
 
   useEffect(() => {
     const element = dialog.current;
@@ -41,7 +51,7 @@ export default function ReadingModal({ children, label = "Nový odečet", return
       >
         ✕
       </button>
-      {children}
+      <CloseModal.Provider value={close}>{children}</CloseModal.Provider>
     </dialog>
   );
 }

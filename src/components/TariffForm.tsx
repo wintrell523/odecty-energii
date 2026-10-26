@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useCloseModal } from "@/components/Modal";
 import {
   createTariff,
   type TariffActionResult,
@@ -20,6 +21,10 @@ export default function TariffForm({ meters }: { meters: Meter[] }) {
     TariffActionResult | null,
     FormData
   >(createTariff, null);
+  const closeModal = useCloseModal();
+  useEffect(() => {
+    if (state?.ok) closeModal?.();
+  }, [state, closeModal]);
   const err = (k: string) =>
     state && !state.ok ? state.errors[k] : undefined;
 
@@ -102,6 +107,11 @@ export default function TariffForm({ meters }: { meters: Meter[] }) {
         <button className="btn btn-primary" disabled={pending}>
           {pending ? "Ukládám…" : "Přidat sazbu"}
         </button>
+        {closeModal && (
+          <button type="button" className="btn btn-secondary" onClick={closeModal}>
+            Zrušit
+          </button>
+        )}
       </div>
     </form>
   );
