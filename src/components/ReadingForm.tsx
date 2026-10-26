@@ -1,25 +1,22 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useRef } from "react";
+import { useCloseModal } from "@/components/Modal";
 import {
   createReading,
   updateReading,
   type ReadingActionResult,
 } from "@/app/actions/readings";
 import {
-  meterTypeIcon,
   meterTypeLabel,
   toIsoDate,
   unitLabel,
-  type MeterType,
-  type Unit,
+  type MeterOption,
 } from "@/lib/format";
 
-type Meter = { id: number; name: string; type: MeterType; unit: Unit };
 
 type Props = {
-  meters: Meter[];
+  meters: MeterOption[];
   initial?: {
     id: number;
     meterId: number;
@@ -28,16 +25,15 @@ type Props = {
     note: string | null;
   };
   defaultMeterId?: number;
-  redirectTo?: string;
 };
 
 export default function ReadingForm({
   meters,
   initial,
   defaultMeterId,
-  redirectTo,
 }: Props) {
-  const router = useRouter();
+  const closeModal = useCloseModal();
+  const meterSelect = useRef<HTMLSelectElement>(null);
   const action = initial ? updateReading.bind(null, initial.id) : createReading;
   const [state, formAction, pending] = useActionState<
     ReadingActionResult | null,
@@ -45,10 +41,20 @@ export default function ReadingForm({
   >(action, null);
 
   useEffect(() => {
-    if (state?.ok && redirectTo) {
-      router.push(redirectTo);
+    if (initial || defaultMeterId != null) return;
+    try {
+      const savedMeter = localStorage.getItem("last-reading-meter");
+      if (meterSelect.current && meters.some((m) => String(m.id) === savedMeter)) {
+        meterSelect.current.value = savedMeter!;
+      }
+    } catch {
+      // The form still works when browser storage is blocked.
     }
-  }, [state, redirectTo, router]);
+  }, [initial, defaultMeterId, meters]);
+
+  useEffect(() => {
+    if (state?.ok) closeModal?.();
+  }, [state, closeModal]);
 
   const err = (k: string) =>
     state && !state.ok ? state.errors[k] : undefined;
@@ -60,14 +66,23 @@ export default function ReadingForm({
           Měřič
         </label>
         <select
+          ref={meterSelect}
           id="meterId"
           name="meterId"
           defaultValue={initial?.meterId ?? defaultMeterId ?? meters[0]?.id}
+          onChange={(event) => {
+            if (initial) return;
+            try {
+              localStorage.setItem("last-reading-meter", event.currentTarget.value);
+            } catch {
+              // Remembering the meter is optional when browser storage is blocked.
+            }
+          }}
           required
         >
           {meters.map((m) => (
             <option key={m.id} value={m.id}>
-              {meterTypeIcon(m.type)} {m.name} ({meterTypeLabel(m.type)},{" "}
+              {m.name} ({meterTypeLabel(m.type)},{" "}
               {unitLabel(m.unit)})
             </option>
           ))}
@@ -124,12 +139,8 @@ export default function ReadingForm({
               ? "Uložit změny"
               : "Zapsat odečet"}
         </button>
-        {redirectTo && (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => router.back()}
-          >
+        {closeModal && (
+          <button type="button" className="btn btn-secondary" onClick={closeModal}>
             Zrušit
           </button>
         )}

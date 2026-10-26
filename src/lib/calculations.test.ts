@@ -91,11 +91,8 @@ describe("priceForPeriod", () => {
     expect(r!.unitCost).toBeLessThan(7300); // lower than flat-20
   });
 
-  it("returns zero-priced breakdown when no tariffs exist", () => {
-    const r = priceForPeriod(readings, [], d("2026-01-01"), d("2026-12-31"));
-    expect(r).not.toBeNull();
-    expect(r!.total).toBe(0);
-    expect(r!.consumption).toBeCloseTo(365, 1);
+  it("returns null when no tariffs exist, so the price is unknown, not 0 Kč", () => {
+    expect(priceForPeriod(readings, [], d("2026-01-01"), d("2026-12-31"))).toBeNull();
   });
 });
 
@@ -111,5 +108,27 @@ describe("monthlyConsumption", () => {
       expect(m.consumption).toBeGreaterThan(20);
       expect(m.consumption).toBeLessThan(40);
     }
+  });
+
+  it("does not include the first month after an end-of-year boundary", () => {
+    const readings = [
+      { id: 1, date: d("2026-01-01"), value: 0 },
+      { id: 2, date: d("2027-01-01"), value: 365 },
+    ];
+    const months = monthlyConsumption(readings, d("2026-01-01"), d("2027-01-01"));
+
+    expect(months).toHaveLength(12);
+    expect(months.at(-1)?.month.getMonth()).toBe(11);
+  });
+
+  it("returns each month's period clipped to the requested range", () => {
+    const readings = [
+      { id: 1, date: d("2026-01-01"), value: 0 },
+      { id: 2, date: d("2026-04-01"), value: 90 },
+    ];
+    const months = monthlyConsumption(readings, d("2026-01-15"), d("2026-03-10"));
+    expect(months[0].start).toEqual(d("2026-01-15"));
+    expect(months[0].end).toEqual(new Date(2026, 1, 1));
+    expect(months.at(-1)?.end).toEqual(new Date(2026, 2, 10));
   });
 });

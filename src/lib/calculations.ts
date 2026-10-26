@@ -130,6 +130,7 @@ export type PriceBreakdown = {
 /**
  * Computes price for a period using historical tariffs. Consumption is split between
  * tariff segments linearly by days (we don't know per-day usage detail).
+ * Returns null without enough readings or without any tariff (price unknown).
  */
 export function priceForPeriod(
   readings: ReadingRow[],
@@ -137,17 +138,9 @@ export function priceForPeriod(
   from: Date,
   to: Date,
 ): PriceBreakdown | null {
+  if (tariffs.length === 0) return null;
   const totalConsumption = consumptionBetween(readings, from, to);
   if (totalConsumption == null) return null;
-  if (tariffs.length === 0) {
-    return {
-      consumption: totalConsumption,
-      unitCost: 0,
-      feeCost: 0,
-      total: 0,
-      segments: [],
-    };
-  }
 
   const segs = tariffSegments(tariffs, from, to);
   const totalDays = differenceInCalendarDays(to, from);
@@ -180,20 +173,34 @@ export function priceForPeriod(
   };
 }
 
-/** Aggregates consumption into calendar months between two dates. */
+/**
+ * Aggregates consumption into calendar months between two dates. Each month also
+ * returns its period [start, end), clipped to [from, to], for per-month pricing.
+ */
 export function monthlyConsumption(
   readings: ReadingRow[],
   from: Date,
   to: Date,
-): { month: Date; consumption: number }[] {
-  const months: { month: Date; consumption: number }[] = [];
+): { month: Date; start: Date; end: Date; consumption: number }[] {
+  const months: { month: Date; start: Date; end: Date; consumption: number }[] = [];
   const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
-  const endCursor = new Date(to.getFullYear(), to.getMonth(), 1);
-  while (cursor <= endCursor) {
+  const periodEndBoundary = new Date(
+    to.getFullYear(),
+    to.getMonth(),
+    to.getDate(),
+  );
+  while (cursor < periodEndBoundary) {
     const monthStart = new Date(cursor);
     const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
-    const cons = consumptionBetween(readings, monthStart, monthEnd);
-    months.push({ month: new Date(cursor), consumption: cons ?? 0 });
+    const periodStart = monthStart < from ? from : monthStart;
+    const periodEnd = monthEnd > periodEndBoundary ? periodEndBoundary : monthEnd;
+    const cons = consumptionBetween(readings, periodStart, periodEnd);
+    months.push({
+      month: new Date(cursor),
+      start: periodStart,
+      end: periodEnd,
+      consumption: cons ?? 0,
+    });
     cursor.setMonth(cursor.getMonth() + 1);
   }
   return months;

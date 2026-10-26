@@ -1,18 +1,15 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
   formatDate,
   formatNumber,
   formatPrice,
-  meterTypeIcon,
   meterTypeLabel,
   unitLabel,
   type MeterType,
   type Unit,
 } from "@/lib/format";
 import { accentFor } from "@/lib/theme";
-import { deleteTariff } from "@/app/actions/tariffs";
-import DeleteButton from "@/components/DeleteButton";
-import TariffForm from "@/components/TariffForm";
 
 export const dynamic = "force-dynamic";
 
@@ -33,45 +30,20 @@ export default async function TariffsPage() {
   }
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="section-head">
-          <div className="space-y-1">
-            <p className="smallcaps text-[0.68rem] text-ink-muted">
-              ceník
-            </p>
-            <h1 className="display">Sazby a ceny</h1>
-            <p className="section-sub">
-              historie tarifů — co kdy platilo, to se počítá
-            </p>
-          </div>
+    <div className="space-y-6">
+      <header className="section-head">
+        <div>
+          <h1 className="display">Sazby a ceny</h1>
+          <p className="section-sub">
+            historie tarifů — co kdy platilo, to se počítá
+          </p>
         </div>
-        <div className="rule-dashed" />
+        <Link href="/tariffs/new" scroll={false} className="btn btn-primary">
+          + Nová sazba
+        </Link>
       </header>
 
-      <section className="card max-w-2xl">
-        <h2
-          className="display mb-1"
-          style={{ fontSize: "1.4rem", fontWeight: 500 }}
-        >
-          Nová sazba
-        </h2>
-        <p className="section-sub mb-6">platí od zadaného data dál</p>
-        <TariffForm
-          meters={meters.map((m) => ({
-            id: m.id,
-            name: m.name,
-            type: m.type as MeterType,
-            unit: m.unit as Unit,
-          }))}
-        />
-        <p className="text-xs text-ink-muted mt-5 pt-4 border-t border-rule-soft">
-          Sazba platí od zadaného data, dokud není zadána novější. Pro období
-          před první sazbou se použije nejstarší.
-        </p>
-      </section>
-
-      <div className="space-y-5">
+      <div className="space-y-3">
         {meters.map((meter) => {
           const tlist = byMeter.get(meter.id) ?? [];
           const accent = accentFor(meter.type as MeterType);
@@ -85,23 +57,15 @@ export default async function TariffsPage() {
                 } as React.CSSProperties
               }
             >
-              <header className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
-                <h3 className="display flex items-center gap-2.5" style={{ fontSize: "1.25rem", fontWeight: 500 }}>
-                  <span
-                    className="accent-dot"
-                    style={{ ["--dot" as string]: `var(${accent.cssVar})` }}
-                    aria-hidden="true"
-                  />
-                  {meter.name}
-                </h3>
-                <span className="text-xs text-ink-muted">
-                  {meterTypeIcon(meter.type as MeterType)}{" "}
+              <header className="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
+                <h2 className="display accent-text text-xl">{meter.name}</h2>
+                <span className="text-xs accent-muted">
                   {meterTypeLabel(meter.type as MeterType)} ·{" "}
                   {unitLabel(meter.unit as Unit)}
                 </span>
               </header>
               {tlist.length === 0 ? (
-                <p className="text-sm text-ink-muted">
+                <p className="text-sm accent-muted">
                   Žádné sazby. Bez sazby se nepočítá cena.
                 </p>
               ) : (
@@ -136,13 +100,13 @@ export default async function TariffsPage() {
                             )}
                           </td>
                           <td className="text-right">
-                            <DeleteButton
-                              action={async () => {
-                                "use server";
-                                await deleteTariff(t.id);
-                              }}
-                              confirmText="Smazat sazbu?"
-                            />
+                            <Link
+                              href={`/tariffs/${t.id}/edit`}
+                              scroll={false}
+                              className="text-ink-muted hover:text-ink transition-colors"
+                            >
+                              Upravit
+                            </Link>
                           </td>
                         </tr>
                       ))}

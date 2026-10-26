@@ -1,23 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { ZodError } from "zod";
 import { prisma } from "@/lib/db";
-import { readingInput } from "@/lib/schemas";
+import { readingInput, zodErrors } from "@/lib/schemas";
 import { parseIsoDate } from "@/lib/format";
 
 export type ReadingActionResult =
   | { ok: true; id?: number }
   | { ok: false; errors: Record<string, string> };
-
-function flattenErrors(zerr: ZodError): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const issue of zerr.issues) {
-    const key = issue.path.map(String).join(".") || "_form";
-    if (!out[key]) out[key] = issue.message;
-  }
-  return out;
-}
 
 export async function createReading(_prev: ReadingActionResult | null, formData: FormData): Promise<ReadingActionResult> {
   const parsed = readingInput.safeParse({
@@ -26,7 +16,7 @@ export async function createReading(_prev: ReadingActionResult | null, formData:
     value: formData.get("value"),
     note: formData.get("note") ?? "",
   });
-  if (!parsed.success) return { ok: false, errors: flattenErrors(parsed.error) };
+  if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
 
   const reading = await prisma.reading.create({
     data: {
@@ -49,7 +39,7 @@ export async function updateReading(id: number, _prev: ReadingActionResult | nul
     value: formData.get("value"),
     note: formData.get("note") ?? "",
   });
-  if (!parsed.success) return { ok: false, errors: flattenErrors(parsed.error) };
+  if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
 
   await prisma.reading.update({
     where: { id },

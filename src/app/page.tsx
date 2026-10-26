@@ -2,11 +2,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import MeterCard from "@/components/MeterCard";
 import {
+  consumptionBetween,
   priceForPeriod,
   type ReadingRow,
   type TariffRow,
 } from "@/lib/calculations";
-import type { MeterType, Unit } from "@/lib/format";
+import { formatPrice, type MeterType, type Unit } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,6 @@ export default async function Dashboard() {
     const last = readings.length > 0 ? readings[readings.length - 1] : null;
     const prev = readings.length > 1 ? readings[readings.length - 2] : null;
 
-    const priceBreakdown = priceForPeriod(readings, tariffs, monthStart, monthEnd);
 
     return {
       id: m.id,
@@ -48,8 +48,9 @@ export default async function Dashboard() {
       unit: m.unit as Unit,
       latest: last ? { date: last.date, value: last.value } : null,
       previous: prev ? { date: prev.date, value: prev.value } : null,
-      monthConsumption: priceBreakdown?.consumption ?? null,
-      monthPrice: priceBreakdown ? priceBreakdown.total : null,
+      monthConsumption: consumptionBetween(readings, monthStart, monthEnd),
+      monthPrice:
+        priceForPeriod(readings, tariffs, monthStart, monthEnd)?.total ?? null,
     };
   });
 
@@ -58,27 +59,19 @@ export default async function Dashboard() {
     year: "numeric",
   });
 
+  const pricedCards = cards.filter((c) => c.monthPrice != null);
+  const monthTotal = pricedCards.reduce((sum, c) => sum + c.monthPrice!, 0);
+
   return (
-    <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="section-head">
-          <div className="space-y-1">
-            <p className="smallcaps text-[0.68rem] text-ink-muted">
-              aktuální období
-            </p>
-            <h1 className="display">Přehled</h1>
-            <p className="section-sub">{monthLabel}</p>
-          </div>
-          <div className="flex gap-2.5 items-center">
-            <Link href="/reports" className="btn btn-secondary">
-              Souhrny
-            </Link>
-            <Link href="/readings/new" className="btn btn-primary">
-              + Nový odečet
-            </Link>
-          </div>
+    <div className="space-y-6">
+      <header className="section-head">
+        <div>
+          <h1 className="display">Přehled</h1>
+          <p className="section-sub first-letter:uppercase">{monthLabel}</p>
         </div>
-        <div className="rule-dashed" />
+        <Link href="/readings/new" scroll={false} className="btn btn-primary">
+          + Nový odečet
+        </Link>
       </header>
 
       {meters.length === 0 ? (
@@ -92,14 +85,11 @@ export default async function Dashboard() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {cards.map((c, i) => (
-            <div
-              key={c.id}
-              className="stagger-in"
-              style={{ ["--i" as string]: i }}
-            >
+        <div className="grid gap-3 lg:grid-cols-[1fr_15rem] lg:items-start xl:grid-cols-1">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {cards.map((c) => (
               <MeterCard
+                key={c.id}
                 meter={{
                   id: c.id,
                   name: c.name,
@@ -111,8 +101,40 @@ export default async function Dashboard() {
                 monthConsumption={c.monthConsumption}
                 monthPrice={c.monthPrice}
               />
+            ))}
+          </div>
+
+          {/* On wide screens the panel becomes a strip above the tiles. */}
+          <section
+            className="card xl:order-first xl:flex xl:items-center xl:gap-10"
+            style={{ padding: "1rem 1.25rem" }}
+          >
+            <div className="mb-3 xl:mb-0">
+              <h2 className="section-sub">Tento měsíc celkem</h2>
+              {pricedCards.length === 0 ? (
+                <p className="mt-1.5 text-sm text-ink-muted">
+                  Bez sazeb se cena nepočítá.
+                </p>
+              ) : (
+                <p className="display numerals mt-1 text-3xl">
+                  {formatPrice(monthTotal)}
+                </p>
+              )}
             </div>
-          ))}
+            {pricedCards.length > 0 && (
+              <ul className="text-sm xl:flex xl:gap-8">
+                {pricedCards.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex justify-between gap-3 border-t border-rule py-1.5 xl:flex-col xl:gap-0.5 xl:border-0 xl:py-0"
+                  >
+                    <span className="text-ink-muted truncate">{c.name}</span>
+                    <span className="numerals">{formatPrice(c.monthPrice!)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
       )}
     </div>

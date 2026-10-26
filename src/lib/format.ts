@@ -31,17 +31,17 @@ export function meterTypeLabel(t: MeterType): string {
   }
 }
 
-export function meterTypeIcon(t: MeterType): string {
-  switch (t) {
-    case "ELECTRICITY":
-      return "⚡";
-    case "COLD_WATER":
-      return "💧";
-    case "HOT_WATER":
-      return "🚿";
-    case "HEAT":
-      return "🔥";
-  }
+/** A meter as the reading and tariff forms show it in their select. */
+export type MeterOption = { id: number; name: string; type: MeterType; unit: Unit };
+
+/** Narrows a database meter row (string enums) to a MeterOption. */
+export function toMeterOption(m: {
+  id: number;
+  name: string;
+  type: string;
+  unit: string;
+}): MeterOption {
+  return { id: m.id, name: m.name, type: m.type as MeterType, unit: m.unit as Unit };
 }
 
 const nf = new Intl.NumberFormat("cs-CZ", {
@@ -72,6 +72,11 @@ export function formatDate(d: Date | string): string {
   return format(dt, "d. M. yyyy", { locale: cs });
 }
 
+export function formatDateLong(d: Date | string): string {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return format(dt, "d. MMMM yyyy", { locale: cs });
+}
+
 export function formatMonth(d: Date | string): string {
   const dt = typeof d === "string" ? new Date(d) : d;
   return format(dt, "LLLL yyyy", { locale: cs });
@@ -85,4 +90,12 @@ export function parseIsoDate(s: string): Date {
   // Treat as local midnight to avoid TZ shifts when storing date-only values.
   const [y, m, day] = s.split("-").map(Number);
   return new Date(y, m - 1, day);
+}
+
+/** Validates a date-only value before it is converted for storage. */
+export function isIsoDate(s: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+
+  const date = parseIsoDate(s);
+  return !Number.isNaN(date.getTime()) && toIsoDate(date) === s;
 }

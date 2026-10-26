@@ -3,7 +3,6 @@ import {
   formatDate,
   formatNumber,
   formatPrice,
-  meterTypeIcon,
   meterTypeLabel,
   unitLabel,
   type MeterType,
@@ -30,111 +29,81 @@ export default function MeterCard({
   const consumption =
     latest && previous ? latest.value - previous.value : null;
   const accent = accentFor(meter.type);
+  const typeLabel = meterTypeLabel(meter.type);
 
   return (
     <article
-      className="card card-accent flex flex-col gap-5"
+      className="card card-accent flex flex-col gap-3"
       style={
         {
           "--accent": `var(${accent.cssVar})`,
+          padding: "1rem 1.1rem",
         } as React.CSSProperties
       }
     >
-      {/* Heading */}
-      <header className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span
-            className="accent-dot"
-            style={{ ["--dot" as string]: `var(${accent.cssVar})` }}
-            aria-hidden="true"
-          />
-          <h3 className="display truncate text-base">
-            {meter.name}
-          </h3>
+      <header className="flex items-baseline justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-semibold">{meter.name}</h3>
+          {typeLabel !== meter.name && (
+            <p className="text-xs accent-muted">{typeLabel}</p>
+          )}
         </div>
-        <span className="text-xs text-ink-muted shrink-0 mt-1">
-          {meterTypeIcon(meter.type)} {meterTypeLabel(meter.type)}
-        </span>
+        {latest && (
+          <span
+            className="text-xs numerals accent-muted shrink-0"
+            title="Datum posledního odečtu"
+          >
+            {formatDate(latest.date)}
+          </span>
+        )}
       </header>
 
       {latest ? (
-        <>
-          {/* Hero number */}
-          <div>
-            <div className="smallcaps mb-1.5">
-              Poslední stav · {formatDate(latest.date)}
-            </div>
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="display numerals text-ink text-4xl font-semibold leading-none">
-                {formatNumber(latest.value)}
-              </span>
-              <span className="text-ink-soft text-base">
-                {unitLabel(meter.unit)}
-              </span>
-            </div>
-          </div>
-
-          {/* Delta from previous */}
-          {consumption != null && previous && (
-            <div className="text-sm text-ink-soft">
-              <span className="text-ink-muted">
-                Od {formatDate(previous.date)}{" "}
-              </span>
-              <span className="numerals text-ink font-medium">
-                +{formatNumber(consumption)} {unitLabel(meter.unit)}
-              </span>
-              {meter.unit === "GJ" && (
-                <span className="text-ink-muted">
-                  {" "}
-                  · ≈ {formatNumber(gjToKwh(consumption))} kWh
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Section divider + this-month leaders */}
-          {monthConsumption != null && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 smallcaps">
-                <span className="flex-1 rule-dashed" />
-                <span>tento měsíc</span>
-                <span className="flex-1 rule-dashed" />
-              </div>
-
-              <div className="space-y-2">
-                <div className="leader">
-                  <span className="text-sm text-ink-muted">spotřeba</span>
-                  <span className="leader-fill" aria-hidden="true" />
-                  <span className="text-sm numerals text-ink font-medium">
-                    {formatNumber(monthConsumption)} {unitLabel(meter.unit)}
-                  </span>
-                </div>
-                {monthPrice != null && (
-                  <div className="leader">
-                    <span className="text-sm text-ink-muted">přibližná cena</span>
-                    <span className="leader-fill" aria-hidden="true" />
-                    <span className="text-sm numerals text-ink font-medium">
-                      {formatPrice(monthPrice)}
+        <div>
+          <p className="display numerals accent-text text-3xl">
+            {formatNumber(latest.value)}{" "}
+            <span className="text-sm font-medium">{unitLabel(meter.unit)}</span>
+          </p>
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm numerals">
+            {monthConsumption != null && (
+              <>
+                <dt className="accent-muted">Tento měsíc</dt>
+                <dd className="text-right">
+                  +{formatNumber(monthConsumption)} {unitLabel(meter.unit)}
+                </dd>
+              </>
+            )}
+            {monthPrice != null && (
+              <>
+                <dt className="accent-muted">Cena</dt>
+                <dd className="text-right">{formatPrice(monthPrice)}</dd>
+              </>
+            )}
+            {consumption != null && previous && (
+              <>
+                <dt className="accent-muted">Od {formatDate(previous.date)}</dt>
+                <dd className="text-right">
+                  +{formatNumber(consumption)} {unitLabel(meter.unit)}
+                  {meter.unit === "GJ" && (
+                    <span className="block text-xs accent-muted">
+                      ≈ {formatNumber(gjToKwh(consumption))} kWh
                     </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </>
+                  )}
+                </dd>
+              </>
+            )}
+          </dl>
+        </div>
       ) : (
-        <div className="text-sm text-ink-muted">Žádné odečty zatím.</div>
+        <p className="text-sm accent-muted">Žádné odečty zatím.</p>
       )}
 
-      {/* Footer CTA */}
       <Link
         href={`/readings/new?meter=${meter.id}`}
-        className="group mt-auto inline-flex items-center gap-2 text-sm text-ink-soft hover:text-ink transition-colors w-fit"
+        scroll={false}
+        className="mt-auto pt-1 w-fit text-sm text-ink-soft hover:text-ink transition-colors"
       >
-        <span>Zapsat nový odečet</span>
-        <span className="inline-block transition-transform group-hover:translate-x-1">
-          →
-        </span>
+        Zapsat odečet →
       </Link>
     </article>
   );
