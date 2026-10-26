@@ -4,13 +4,17 @@ import { toMeterOption } from "@/lib/format";
 import ReadingForm from "@/components/ReadingForm";
 import DeleteButton from "@/components/DeleteButton";
 import { deleteReading } from "@/app/actions/readings";
+import { readingsListUrl } from "@/lib/filters";
 
 export default async function EditReading({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ meter?: string }>;
 }) {
   const id = Number((await params).id);
+  const listUrl = readingsListUrl((await searchParams).meter);
   if (!Number.isInteger(id)) notFound();
   const [reading, meters] = await Promise.all([
     prisma.reading.findUnique({ where: { id } }),
@@ -43,7 +47,7 @@ export default async function EditReading({
               "use server";
               await deleteReading(reading.id);
               // Leave the edit route, so it does not re-render a deleted reading.
-              redirect("/readings", RedirectType.replace);
+              redirect(listUrl, RedirectType.replace);
             }}
             confirmText="Smazat odečet?"
           />

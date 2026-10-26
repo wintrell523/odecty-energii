@@ -20,6 +20,8 @@ export default async function ReadingsPage({
 }) {
   const { meter } = await searchParams;
   const meterId = meter ? Number(meter) : undefined;
+  // Carried into the edit and new links, so closing the modal returns to this filter.
+  const filterQuery = meterId ? `?meter=${meterId}` : "";
 
   const [meters, readings] = await Promise.all([
     prisma.meter.findMany({ orderBy: { id: "asc" } }),
@@ -96,7 +98,11 @@ export default async function ReadingsPage({
               : `${rows.length} ${rows.length === 1 ? "záznam" : rows.length < 5 ? "záznamy" : "záznamů"}`}
           </p>
         </div>
-        <Link href="/readings/new" scroll={false} className="btn btn-primary">
+        <Link
+          href={`/readings/new${filterQuery}`}
+          scroll={false}
+          className="btn btn-primary"
+        >
           + Nový odečet
         </Link>
       </header>
@@ -177,7 +183,7 @@ export default async function ReadingsPage({
                       {r.note && <span className="text-ink-soft"> · {r.note}</span>}
                     </span>
                     <Link
-                      href={`/readings/${r.id}/edit`}
+                      href={`/readings/${r.id}/edit${filterQuery}`}
                       scroll={false}
                       className="text-right text-ink-muted hover:text-ink transition-colors"
                     >
