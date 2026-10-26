@@ -73,7 +73,7 @@ export default async function Dashboard() {
             <Link href="/reports" className="btn btn-secondary">
               Souhrny
             </Link>
-            <Link href="/readings/new" className="btn btn-primary">
+            <Link href="/readings/new" scroll={false} className="btn btn-primary">
               + Nový odečet
             </Link>
           </div>

@@ -94,7 +94,7 @@ export default async function ReadingsPage({
                 : `${rows.length} ${rows.length === 1 ? "záznam" : rows.length < 5 ? "záznamy" : "záznamů"}`}
             </p>
           </div>
-          <Link href="/readings/new" className="btn btn-primary">
+          <Link href="/readings/new" scroll={false} className="btn btn-primary">
             + Nový odečet
           </Link>
         </div>

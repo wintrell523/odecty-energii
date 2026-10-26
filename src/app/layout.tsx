@@ -30,8 +30,10 @@ const NAV = [
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -66,6 +68,7 @@ export default function RootLayout({
         <main className="mx-auto max-w-5xl w-full px-6 py-10 flex-1">
           {children}
         </main>
+        {modal}
 
         <footer className="border-t border-rule">
           <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between flex-wrap gap-2">

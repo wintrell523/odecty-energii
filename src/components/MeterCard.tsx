@@ -129,6 +129,7 @@ export default function MeterCard({
       {/* Footer CTA */}
       <Link
         href={`/readings/new?meter=${meter.id}`}
+        scroll={false}
         className="group mt-auto inline-flex items-center gap-2 text-sm text-ink-soft hover:text-ink transition-colors w-fit"
       >
         <span>Zapsat nový odečet</span>

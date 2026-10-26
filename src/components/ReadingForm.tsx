@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   createReading,
@@ -29,6 +29,7 @@ type Props = {
   };
   defaultMeterId?: number;
   redirectTo?: string;
+  closeOnSuccess?: boolean;
 };
 
 export default function ReadingForm({
@@ -36,8 +37,10 @@ export default function ReadingForm({
   initial,
   defaultMeterId,
   redirectTo,
+  closeOnSuccess = false,
 }: Props) {
   const router = useRouter();
+  const meterSelect = useRef<HTMLSelectElement>(null);
   const action = initial ? updateReading.bind(null, initial.id) : createReading;
   const [state, formAction, pending] = useActionState<
     ReadingActionResult | null,
@@ -45,10 +48,22 @@ export default function ReadingForm({
   >(action, null);
 
   useEffect(() => {
-    if (state?.ok && redirectTo) {
-      router.push(redirectTo);
+    if (initial || defaultMeterId != null) return;
+    try {
+      const savedMeter = localStorage.getItem("last-reading-meter");
+      if (meterSelect.current && meters.some((m) => String(m.id) === savedMeter)) {
+        meterSelect.current.value = savedMeter!;
+      }
+    } catch {
+      // The form still works when browser storage is blocked.
     }
-  }, [state, redirectTo, router]);
+  }, [initial, defaultMeterId, meters]);
+
+  useEffect(() => {
+    if (!state?.ok) return;
+    if (closeOnSuccess) router.back();
+    else if (redirectTo) router.push(redirectTo);
+  }, [state, redirectTo, closeOnSuccess, router]);
 
   const err = (k: string) =>
     state && !state.ok ? state.errors[k] : undefined;
@@ -60,9 +75,17 @@ export default function ReadingForm({
           Měřič
         </label>
         <select
+          ref={meterSelect}
           id="meterId"
           name="meterId"
           defaultValue={initial?.meterId ?? defaultMeterId ?? meters[0]?.id}
+          onChange={(event) => {
+            try {
+              localStorage.setItem("last-reading-meter", event.currentTarget.value);
+            } catch {
+              // Remembering the meter is optional when browser storage is blocked.
+            }
+          }}
           required
         >
           {meters.map((m) => (
@@ -124,11 +147,11 @@ export default function ReadingForm({
               ? "Uložit změny"
               : "Zapsat odečet"}
         </button>
-        {redirectTo && (
+        {(redirectTo || closeOnSuccess) && (
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => router.back()}
+            onClick={() => closeOnSuccess ? router.back() : router.replace(redirectTo!)}
           >
             Zrušit
           </button>

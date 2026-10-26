@@ -33,7 +33,7 @@ export default async function MetersPage() {
               elektřina, voda, teplo · co měříš, to počítáš
             </p>
           </div>
-          <Link href="/readings/new" className="btn btn-secondary">
+          <Link href="/readings/new" scroll={false} className="btn btn-secondary">
             + Nový odečet
           </Link>
         </div>
