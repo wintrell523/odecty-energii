@@ -42,9 +42,19 @@ export default function MeterCard({
       }
     >
       <header className="flex items-baseline justify-between gap-3">
-        <h3 className="truncate text-sm font-semibold">{meter.name}</h3>
-        {typeLabel !== meter.name && (
-          <span className="text-xs accent-muted shrink-0">{typeLabel}</span>
+        <div className="min-w-0">
+          <h3 className="truncate text-sm font-semibold">{meter.name}</h3>
+          {typeLabel !== meter.name && (
+            <p className="text-xs accent-muted">{typeLabel}</p>
+          )}
+        </div>
+        {latest && (
+          <span
+            className="text-xs numerals accent-muted shrink-0"
+            title="Datum posledního odečtu"
+          >
+            {formatDate(latest.date)}
+          </span>
         )}
       </header>
 
@@ -54,23 +64,35 @@ export default function MeterCard({
             {formatNumber(latest.value)}{" "}
             <span className="text-sm font-medium">{unitLabel(meter.unit)}</span>
           </p>
-          {monthConsumption != null && (
-            <p className="mt-1.5 text-sm numerals accent-muted">
-              tento měsíc +{formatNumber(monthConsumption)} {unitLabel(meter.unit)}
-              {monthPrice != null && ` · ${formatPrice(monthPrice)}`}
-            </p>
-          )}
-          <p className="mt-0.5 text-xs numerals accent-muted opacity-75">
-            stav k {formatDate(latest.date)}
-            {consumption != null && previous && (
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm numerals">
+            {monthConsumption != null && (
               <>
-                {" "}· od {formatDate(previous.date)} +{formatNumber(consumption)}{" "}
-                {unitLabel(meter.unit)}
-                {meter.unit === "GJ" &&
-                  ` (≈ ${formatNumber(gjToKwh(consumption))} kWh)`}
+                <dt className="accent-muted">Tento měsíc</dt>
+                <dd className="text-right">
+                  +{formatNumber(monthConsumption)} {unitLabel(meter.unit)}
+                </dd>
               </>
             )}
-          </p>
+            {monthPrice != null && (
+              <>
+                <dt className="accent-muted">Cena</dt>
+                <dd className="text-right">{formatPrice(monthPrice)}</dd>
+              </>
+            )}
+            {consumption != null && previous && (
+              <>
+                <dt className="accent-muted">Od {formatDate(previous.date)}</dt>
+                <dd className="text-right">
+                  +{formatNumber(consumption)} {unitLabel(meter.unit)}
+                  {meter.unit === "GJ" && (
+                    <span className="block text-xs accent-muted">
+                      ≈ {formatNumber(gjToKwh(consumption))} kWh
+                    </span>
+                  )}
+                </dd>
+              </>
+            )}
+          </dl>
         </div>
       ) : (
         <p className="text-sm accent-muted">Žádné odečty zatím.</p>
