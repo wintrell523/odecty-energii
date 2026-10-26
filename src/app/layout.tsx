@@ -49,7 +49,7 @@ export default function RootLayout({
           </p>
         </aside>
 
-        <main className="w-full max-w-4xl px-5 pt-8 pb-28 md:px-10 md:py-10">
+        <main className="w-full max-w-6xl px-5 pt-8 pb-28 md:px-10 md:py-10">
           {children}
         </main>
         {modal}

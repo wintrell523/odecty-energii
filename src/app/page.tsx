@@ -84,8 +84,8 @@ export default async function Dashboard() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 lg:grid-cols-[1fr_15rem] lg:items-start">
-          <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-[1fr_15rem] lg:items-start xl:grid-cols-1">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {cards.map((c) => (
               <MeterCard
                 key={c.id}
@@ -103,29 +103,35 @@ export default async function Dashboard() {
             ))}
           </div>
 
-          <section className="card" style={{ padding: "1rem 1.1rem" }}>
-            <h2 className="section-sub">Tento měsíc celkem</h2>
-            {pricedCards.length === 0 ? (
-              <p className="mt-2 text-sm text-ink-muted">
-                Bez sazeb se cena nepočítá.
-              </p>
-            ) : (
-              <>
-                <p className="display numerals mt-1.5 mb-3 text-3xl">
+          {/* On wide screens the panel becomes a strip above the tiles. */}
+          <section
+            className="card xl:order-first xl:flex xl:items-center xl:gap-10"
+            style={{ padding: "1rem 1.25rem" }}
+          >
+            <div className="mb-3 xl:mb-0">
+              <h2 className="section-sub">Tento měsíc celkem</h2>
+              {pricedCards.length === 0 ? (
+                <p className="mt-1.5 text-sm text-ink-muted">
+                  Bez sazeb se cena nepočítá.
+                </p>
+              ) : (
+                <p className="display numerals mt-1 text-3xl">
                   {formatPrice(monthTotal)}
                 </p>
-                <ul className="text-sm">
-                  {pricedCards.map((c) => (
-                    <li
-                      key={c.id}
-                      className="flex justify-between gap-3 border-t border-rule py-1.5"
-                    >
-                      <span className="text-ink-muted truncate">{c.name}</span>
-                      <span className="numerals">{formatPrice(c.monthPrice!)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </>
+              )}
+            </div>
+            {pricedCards.length > 0 && (
+              <ul className="text-sm xl:flex xl:gap-8">
+                {pricedCards.map((c) => (
+                  <li
+                    key={c.id}
+                    className="flex justify-between gap-3 border-t border-rule py-1.5 xl:flex-col xl:gap-0.5 xl:border-0 xl:py-0"
+                  >
+                    <span className="text-ink-muted truncate">{c.name}</span>
+                    <span className="numerals">{formatPrice(c.monthPrice!)}</span>
+                  </li>
+                ))}
+              </ul>
             )}
           </section>
         </div>
