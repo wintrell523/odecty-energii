@@ -44,9 +44,6 @@ export default function RootLayout({
             energií
           </Link>
           <Nav />
-          <p className="hidden md:block mt-auto px-3 text-xs text-ink-faint">
-            data v <code className="text-ink-muted">prisma/dev.db</code>
-          </p>
         </aside>
 
         <main className="w-full max-w-6xl px-5 pt-8 pb-28 md:px-10 md:py-10">

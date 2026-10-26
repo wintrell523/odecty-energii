@@ -18,7 +18,8 @@ Předpoklady: Node.js 20+.
 
 ```bash
 npm install
-npx prisma migrate deploy   # vytvoří prázdnou DB při prvním běhu
+npx prisma generate
+npx prisma db push          # vytvoří prázdnou lokální DB při prvním běhu
 npm run db:seed             # založí 4 výchozí měřiče (přeskočí pokud existují)
 npm run dev                 # http://localhost:3000
 ```
@@ -30,9 +31,9 @@ npm run build
 npm start
 ```
 
-## Datový soubor
+## Data
 
-Všechna data jsou v `prisma/dev.db` (SQLite). Pro zálohu stačí zkopírovat tento soubor. Soubor je `.gitignored`. Připojení k databázi je nakonfigurované v `prisma.config.ts` (Prisma 7 nepoužívá `url` v `schema.prisma`) — žádné `.env` se pro běh aplikace nevyžaduje.
+Bez `TURSO_DATABASE_URL` používá aplikace lokální `prisma/dev.db` (SQLite). Soubor je `.gitignored`; pro zálohu jej stačí zkopírovat. S `TURSO_DATABASE_URL` a `TURSO_AUTH_TOKEN` používá hostovanou databázi Turso. Vercel dodává obě proměnné přes integraci Turso; `vercel env pull` je může stáhnout do ignorovaného `.env.local` pro lokální přístup ke stejné online databázi. Lokální soubor se s online databází automaticky nesynchronizuje.
 
 ## Struktura projektu
 
