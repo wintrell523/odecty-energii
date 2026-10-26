@@ -28,7 +28,7 @@ export default function ConsumptionChart({
   const isPrice = metric === "price";
   const chartData = data.map((month) => ({
     label: month.label,
-    value: isPrice ? month.price ?? 0 : month.consumption,
+    value: isPrice ? month.price : month.consumption,
   }));
 
   return (
@@ -78,7 +78,9 @@ export default function ConsumptionChart({
         <Tooltip
           cursor={{ fill: "rgba(255,255,255,0.04)" }}
           formatter={(v) => [
-            isPrice
+            v == null
+              ? "—"
+              : isPrice
               ? formatPrice(Number(v))
               : `${formatNumber(Number(v))} ${unitLabel(unit)}`,
             isPrice ? "Cena" : "Spotřeba",
