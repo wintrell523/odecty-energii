@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect, RedirectType } from "next/navigation";
 import { prisma } from "@/lib/db";
 import type { MeterType, Unit } from "@/lib/format";
 import ReadingForm from "@/components/ReadingForm";
+import DeleteButton from "@/components/DeleteButton";
+import { deleteReading } from "@/app/actions/readings";
 
 export default async function EditReading({
   params,
@@ -39,6 +41,17 @@ export default async function EditReading({
             note: reading.note,
           }}
         />
+        <div className="mt-6 flex justify-end border-t border-rule pt-4">
+          <DeleteButton
+            action={async () => {
+              "use server";
+              await deleteReading(reading.id);
+              // Leave the edit route, so it does not re-render a deleted reading.
+              redirect("/readings", RedirectType.replace);
+            }}
+            confirmText="Smazat odečet?"
+          />
+        </div>
       </div>
     </div>
   );

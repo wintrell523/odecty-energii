@@ -59,6 +59,11 @@ export function formatDate(d: Date | string): string {
   return format(dt, "d. M. yyyy", { locale: cs });
 }
 
+export function formatDateLong(d: Date | string): string {
+  const dt = typeof d === "string" ? new Date(d) : d;
+  return format(dt, "d. MMMM yyyy", { locale: cs });
+}
+
 export function formatMonth(d: Date | string): string {
   const dt = typeof d === "string" ? new Date(d) : d;
   return format(dt, "LLLL yyyy", { locale: cs });

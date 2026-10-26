@@ -303,7 +303,7 @@ button.chip {
 }
 
 /* -------------------------------------------------------------------------
-   Card and meter tile
+   Card, meter tile and meter colors
    ------------------------------------------------------------------------- */
 
 .card {
@@ -317,10 +317,10 @@ button.chip {
 .card-accent {
   background: color-mix(in oklab, var(--accent, var(--color-brand)) 20%, var(--color-night));
 }
-.card-accent .accent-text {
+.accent-text {
   color: var(--accent);
 }
-.card-accent .accent-muted {
+.accent-muted {
   color: color-mix(in oklab, var(--color-ink) 70%, var(--accent));
 }
 

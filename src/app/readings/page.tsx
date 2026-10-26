@@ -1,16 +1,15 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
-  formatDate,
+  formatDateLong,
   formatNumber,
+  toIsoDate,
   unitLabel,
   type MeterType,
   type Unit,
 } from "@/lib/format";
 import { withConsumption, gjToKwh } from "@/lib/calculations";
 import { accentFor } from "@/lib/theme";
-import { deleteReading } from "@/app/actions/readings";
-import DeleteButton from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -78,34 +77,33 @@ export default async function ReadingsPage({
 
   rows.sort((a, b) => b.date.getTime() - a.date.getTime());
 
+  // Rows are sorted newest first, so each day's group stays in order.
+  const days: { key: string; date: Date; rows: Row[] }[] = [];
+  for (const r of rows) {
+    const key = toIsoDate(r.date);
+    if (days.at(-1)?.key !== key) days.push({ key, date: r.date, rows: [] });
+    days.at(-1)!.rows.push(r);
+  }
+
   return (
-    <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="section-head">
-          <div className="space-y-1">
-            <p className="smallcaps text-[0.68rem] text-ink-muted">
-              historie odečtů
-            </p>
-            <h1 className="display">Odečty</h1>
-            <p className="section-sub">
-              {rows.length === 0
-                ? "zatím nic"
-                : `${rows.length} ${rows.length === 1 ? "záznam" : rows.length < 5 ? "záznamy" : "záznamů"}`}
-            </p>
-          </div>
-          <Link href="/readings/new" scroll={false} className="btn btn-primary">
-            + Nový odečet
-          </Link>
+    <div className="space-y-6">
+      <header className="section-head">
+        <div>
+          <h1 className="display">Odečty</h1>
+          <p className="section-sub">
+            {rows.length === 0
+              ? "zatím nic"
+              : `${rows.length} ${rows.length === 1 ? "záznam" : rows.length < 5 ? "záznamy" : "záznamů"}`}
+          </p>
         </div>
-        <div className="rule-dashed" />
+        <Link href="/readings/new" scroll={false} className="btn btn-primary">
+          + Nový odečet
+        </Link>
       </header>
 
-      <nav className="flex gap-2 flex-wrap items-center">
-        <span className="smallcaps text-[0.65rem] text-ink-muted mr-2">
-          filtr měřiče
-        </span>
+      <nav className="flex gap-1.5 flex-wrap items-center" aria-label="Filtr měřiče">
         <Link href="/readings" className={`chip ${!meterId ? "is-active" : ""}`}>
-          všechny
+          Všechny
         </Link>
         {meters.map((m) => {
           const accent = accentFor(m.type as MeterType);
@@ -115,127 +113,83 @@ export default async function ReadingsPage({
               key={m.id}
               href={`/readings?meter=${m.id}`}
               className={`chip ${isActive ? "is-active" : ""}`}
+              style={{ "--accent": `var(${accent.cssVar})` } as React.CSSProperties}
             >
-              {!isActive && (
-                <span
-                  className="accent-dot"
-                  style={{
-                    ["--dot" as string]: `var(${accent.cssVar})`,
-                    width: "0.45rem",
-                    height: "0.45rem",
-                  }}
-                  aria-hidden="true"
-                />
-              )}
+              {!isActive && <span className="meter-swatch" aria-hidden="true" />}
               {m.name}
             </Link>
           );
         })}
       </nav>
 
-      <section className="card overflow-x-auto">
-        <table className="data">
-          <thead>
-            <tr>
-              <th>Datum</th>
-              <th>Měřič</th>
-              <th className="text-right">Stav</th>
-              <th className="text-right">Spotřeba od minulého</th>
-              <th className="text-right">Dní</th>
-              <th className="text-right">Ø denně</th>
-              <th>Poznámka</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const accent = accentFor(r.meterType);
-              return (
-                <tr key={r.id}>
-                  <td className="whitespace-nowrap text-ink-soft">
-                    {formatDate(r.date)}
-                  </td>
-                  <td>
-                    <span className="grid w-36 grid-cols-[0.45rem_minmax(0,1fr)] items-start gap-2">
-                      <span
-                        className="accent-dot mt-[0.4rem]"
-                        style={{
-                          ["--dot" as string]: `var(${accent.cssVar})`,
-                          width: "0.45rem",
-                          height: "0.45rem",
-                        }}
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0 text-ink">{r.meterName}</span>
+      {days.length === 0 ? (
+        <p className="card text-center text-ink-muted">
+          Zatím žádné odečty. Přidej první přes „+ Nový odečet&ldquo;.
+        </p>
+      ) : (
+        <div className="space-y-5">
+          {days.map((day) => (
+            <section key={day.key}>
+              <header className="flex items-baseline justify-between gap-3 px-1 pb-2">
+                <h2 className="display text-base">{formatDateLong(day.date)}</h2>
+                <span className="text-xs text-ink-muted">
+                  {day.rows.length}{" "}
+                  {day.rows.length === 1
+                    ? "odečet"
+                    : day.rows.length < 5
+                      ? "odečty"
+                      : "odečtů"}
+                </span>
+              </header>
+              <ul className="divide-y divide-rule rounded-2xl bg-surface">
+                {day.rows.map((r) => (
+                  <li
+                    key={r.id}
+                    className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 px-4 py-3 text-sm sm:grid-cols-[8.5rem_8rem_1fr_auto]"
+                    style={
+                      {
+                        "--accent": `var(${accentFor(r.meterType).cssVar})`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <span>
+                      <span className="meter-pill">{r.meterName}</span>
                     </span>
-                  </td>
-                  <td className="text-right numerals text-ink">
-                    {formatNumber(r.value)}{" "}
-                    <span className="text-ink-muted text-xs">
-                      {unitLabel(r.unit)}
+                    <span className="numerals text-right sm:text-left">
+                      {formatNumber(r.value)} {unitLabel(r.unit)}
                     </span>
-                  </td>
-                  <td className="text-right numerals">
-                    {r.consumption == null ? (
-                      <span className="text-ink-faint">—</span>
-                    ) : (
-                      <>
-                        <span className="text-ink">
-                          {formatNumber(r.consumption)} {unitLabel(r.unit)}
-                        </span>
-                        {r.unit === "GJ" && (
-                          <div className="text-xs text-ink-muted mt-0.5">
-                            ≈ {formatNumber(gjToKwh(r.consumption))} kWh
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </td>
-                  <td className="text-right numerals text-ink-soft">
-                    {r.days ?? <span className="text-ink-faint">—</span>}
-                  </td>
-                  <td className="text-right numerals text-ink-soft">
-                    {r.dailyAvg == null ? (
-                      <span className="text-ink-faint">—</span>
-                    ) : (
-                      `${formatNumber(r.dailyAvg)} ${unitLabel(r.unit)}`
-                    )}
-                  </td>
-                  <td className="text-ink-soft text-sm">
-                    {r.note ?? ""}
-                  </td>
-                  <td className="text-right whitespace-nowrap space-x-2">
+                    <span className="text-ink-muted numerals">
+                      {r.consumption == null ? (
+                        "první odečet"
+                      ) : (
+                        <>
+                          <span className="accent-text font-semibold">
+                            +{formatNumber(r.consumption)} {unitLabel(r.unit)}
+                          </span>
+                          {r.unit === "GJ" &&
+                            ` ≈ ${formatNumber(gjToKwh(r.consumption))} kWh`}
+                          {r.days != null &&
+                            ` · ${r.days} ${r.days === 1 ? "den" : r.days < 5 ? "dny" : "dní"}`}
+                          {r.dailyAvg != null &&
+                            ` · ${formatNumber(r.dailyAvg)} ${unitLabel(r.unit)}/den`}
+                        </>
+                      )}
+                      {r.note && <span className="text-ink-soft"> · {r.note}</span>}
+                    </span>
                     <Link
                       href={`/readings/${r.id}/edit`}
                       scroll={false}
-                      className="btn btn-secondary"
+                      className="text-right text-ink-muted hover:text-ink transition-colors"
                     >
                       Upravit
                     </Link>
-                    <DeleteButton
-                      action={async () => {
-                        "use server";
-                        await deleteReading(r.id);
-                      }}
-                      confirmText="Smazat odečet?"
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-            {rows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={8}
-                  className="text-center text-ink-muted py-10"
-                >
-                  Zatím žádné odečty. Přidej první přes „+ Nový odečet&ldquo;.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
 
       <p className="text-xs text-ink-muted max-w-2xl">
         Spotřeba se počítá jako rozdíl proti chronologicky předchozímu odečtu
