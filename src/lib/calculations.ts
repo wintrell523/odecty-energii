@@ -173,13 +173,16 @@ export function priceForPeriod(
   };
 }
 
-/** Aggregates consumption into calendar months between two dates. */
+/**
+ * Aggregates consumption into calendar months between two dates. Each month also
+ * returns its period [start, end), clipped to [from, to], for per-month pricing.
+ */
 export function monthlyConsumption(
   readings: ReadingRow[],
   from: Date,
   to: Date,
-): { month: Date; consumption: number }[] {
-  const months: { month: Date; consumption: number }[] = [];
+): { month: Date; start: Date; end: Date; consumption: number }[] {
+  const months: { month: Date; start: Date; end: Date; consumption: number }[] = [];
   const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
   const periodEndBoundary = new Date(
     to.getFullYear(),
@@ -192,7 +195,12 @@ export function monthlyConsumption(
     const periodStart = monthStart < from ? from : monthStart;
     const periodEnd = monthEnd > periodEndBoundary ? periodEndBoundary : monthEnd;
     const cons = consumptionBetween(readings, periodStart, periodEnd);
-    months.push({ month: new Date(cursor), consumption: cons ?? 0 });
+    months.push({
+      month: new Date(cursor),
+      start: periodStart,
+      end: periodEnd,
+      consumption: cons ?? 0,
+    });
     cursor.setMonth(cursor.getMonth() + 1);
   }
   return months;

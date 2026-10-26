@@ -65,17 +65,10 @@ export default async function ReportsPage({
     }));
 
     const monthly = monthlyConsumption(readings, from, to);
-    const monthlyWithPrices = monthly.map((month) => {
-      const monthEnd = new Date(
-        month.month.getFullYear(),
-        month.month.getMonth() + 1,
-        1,
-      );
-      return {
-        ...month,
-        price: priceForPeriod(readings, tariffs, month.month, monthEnd)?.total ?? null,
-      };
-    });
+    const monthlyWithPrices = monthly.map((month) => ({
+      ...month,
+      price: priceForPeriod(readings, tariffs, month.start, month.end)?.total ?? null,
+    }));
     const consumption = consumptionBetween(readings, from, to);
     const total = priceForPeriod(readings, tariffs, from, to);
 

@@ -120,4 +120,15 @@ describe("monthlyConsumption", () => {
     expect(months).toHaveLength(12);
     expect(months.at(-1)?.month.getMonth()).toBe(11);
   });
+
+  it("returns each month's period clipped to the requested range", () => {
+    const readings = [
+      { id: 1, date: d("2026-01-01"), value: 0 },
+      { id: 2, date: d("2026-04-01"), value: 90 },
+    ];
+    const months = monthlyConsumption(readings, d("2026-01-15"), d("2026-03-10"));
+    expect(months[0].start).toEqual(d("2026-01-15"));
+    expect(months[0].end).toEqual(new Date(2026, 1, 1));
+    expect(months.at(-1)?.end).toEqual(new Date(2026, 2, 10));
+  });
 });
