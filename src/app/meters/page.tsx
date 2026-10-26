@@ -7,8 +7,6 @@ import {
   type Unit,
 } from "@/lib/format";
 import { accentFor } from "@/lib/theme";
-import { deleteMeter } from "@/app/actions/meters";
-import DeleteButton from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -78,13 +76,13 @@ export default async function MetersPage() {
                     {m._count.tariffs}
                   </td>
                   <td className="text-right">
-                    <DeleteButton
-                      action={async () => {
-                        "use server";
-                        await deleteMeter(m.id);
-                      }}
-                      confirmText={`Smazat měřič "${m.name}" a všechny jeho odečty a sazby?`}
-                    />
+                    <Link
+                      href={`/meters/${m.id}/edit`}
+                      scroll={false}
+                      className="text-ink-muted hover:text-ink transition-colors"
+                    >
+                      Upravit
+                    </Link>
                   </td>
                 </tr>
               );

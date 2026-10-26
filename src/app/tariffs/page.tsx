@@ -10,8 +10,6 @@ import {
   type Unit,
 } from "@/lib/format";
 import { accentFor } from "@/lib/theme";
-import { deleteTariff } from "@/app/actions/tariffs";
-import DeleteButton from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -102,13 +100,13 @@ export default async function TariffsPage() {
                             )}
                           </td>
                           <td className="text-right">
-                            <DeleteButton
-                              action={async () => {
-                                "use server";
-                                await deleteTariff(t.id);
-                              }}
-                              confirmText="Smazat sazbu?"
-                            />
+                            <Link
+                              href={`/tariffs/${t.id}/edit`}
+                              scroll={false}
+                              className="text-ink-muted hover:text-ink transition-colors"
+                            >
+                              Upravit
+                            </Link>
                           </td>
                         </tr>
                       ))}
