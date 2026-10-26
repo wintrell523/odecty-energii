@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ReadingModal({ children, returnTo }: {
+export default function ReadingModal({ children, label = "Nový odečet", returnTo }: {
   children: React.ReactNode;
+  label?: string;
   returnTo?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -25,7 +26,7 @@ export default function ReadingModal({ children, returnTo }: {
   return (
     <dialog
       ref={dialog}
-      aria-label="Nový odečet"
+      aria-label={label}
       className="reading-modal"
       onCancel={(event) => {
         event.preventDefault();

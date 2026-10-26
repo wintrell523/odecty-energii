@@ -80,6 +80,7 @@ export default function ReadingForm({
           name="meterId"
           defaultValue={initial?.meterId ?? defaultMeterId ?? meters[0]?.id}
           onChange={(event) => {
+            if (initial) return;
             try {
               localStorage.setItem("last-reading-meter", event.currentTarget.value);
             } catch {

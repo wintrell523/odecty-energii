@@ -211,7 +211,14 @@ export default async function ReadingsPage({
                   <td className="text-ink-soft text-sm">
                     {r.note ?? ""}
                   </td>
-                  <td className="text-right">
+                  <td className="text-right whitespace-nowrap space-x-2">
+                    <Link
+                      href={`/readings/${r.id}/edit`}
+                      scroll={false}
+                      className="btn btn-secondary"
+                    >
+                      Upravit
+                    </Link>
                     <DeleteButton
                       action={async () => {
                         "use server";
