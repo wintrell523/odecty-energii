@@ -130,6 +130,7 @@ export type PriceBreakdown = {
 /**
  * Computes price for a period using historical tariffs. Consumption is split between
  * tariff segments linearly by days (we don't know per-day usage detail).
+ * Returns null without enough readings or without any tariff (price unknown).
  */
 export function priceForPeriod(
   readings: ReadingRow[],
@@ -137,17 +138,9 @@ export function priceForPeriod(
   from: Date,
   to: Date,
 ): PriceBreakdown | null {
+  if (tariffs.length === 0) return null;
   const totalConsumption = consumptionBetween(readings, from, to);
   if (totalConsumption == null) return null;
-  if (tariffs.length === 0) {
-    return {
-      consumption: totalConsumption,
-      unitCost: 0,
-      feeCost: 0,
-      total: 0,
-      segments: [],
-    };
-  }
 
   const segs = tariffSegments(tariffs, from, to);
   const totalDays = differenceInCalendarDays(to, from);

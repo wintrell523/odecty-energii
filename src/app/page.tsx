@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import MeterCard from "@/components/MeterCard";
 import {
+  consumptionBetween,
   priceForPeriod,
   type ReadingRow,
   type TariffRow,
@@ -39,7 +40,6 @@ export default async function Dashboard() {
     const last = readings.length > 0 ? readings[readings.length - 1] : null;
     const prev = readings.length > 1 ? readings[readings.length - 2] : null;
 
-    const priceBreakdown = priceForPeriod(readings, tariffs, monthStart, monthEnd);
 
     return {
       id: m.id,
@@ -48,8 +48,9 @@ export default async function Dashboard() {
       unit: m.unit as Unit,
       latest: last ? { date: last.date, value: last.value } : null,
       previous: prev ? { date: prev.date, value: prev.value } : null,
-      monthConsumption: priceBreakdown?.consumption ?? null,
-      monthPrice: priceBreakdown ? priceBreakdown.total : null,
+      monthConsumption: consumptionBetween(readings, monthStart, monthEnd),
+      monthPrice:
+        priceForPeriod(readings, tariffs, monthStart, monthEnd)?.total ?? null,
     };
   });
 

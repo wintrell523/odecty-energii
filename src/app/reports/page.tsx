@@ -9,6 +9,7 @@ import {
   type Unit,
 } from "@/lib/format";
 import {
+  consumptionBetween,
   monthlyConsumption,
   priceForPeriod,
   gjToKwh,
@@ -75,6 +76,7 @@ export default async function ReportsPage({
         price: priceForPeriod(readings, tariffs, month.month, monthEnd)?.total ?? null,
       };
     });
+    const consumption = consumptionBetween(readings, from, to);
     const total = priceForPeriod(readings, tariffs, from, to);
 
     return {
@@ -83,6 +85,7 @@ export default async function ReportsPage({
       type: m.type as MeterType,
       unit: m.unit as Unit,
       monthly: monthlyWithPrices,
+      consumption,
       total,
     };
   });
@@ -138,17 +141,17 @@ export default async function ReportsPage({
 
                 <div>
                   <p className="text-xs accent-muted mb-1">Roční spotřeba</p>
-                  {r.total ? (
+                  {r.consumption != null ? (
                     <>
                       <p className="display numerals text-3xl">
-                        {formatNumber(r.total.consumption)}{" "}
+                        {formatNumber(r.consumption)}{" "}
                         <span className="text-sm font-medium">
                           {unitLabel(r.unit)}
                         </span>
                       </p>
                       {r.unit === "GJ" && (
                         <p className="text-xs accent-muted mt-1">
-                          ≈ {formatNumber(gjToKwh(r.total.consumption))} kWh
+                          ≈ {formatNumber(gjToKwh(r.consumption))} kWh
                         </p>
                       )}
                     </>

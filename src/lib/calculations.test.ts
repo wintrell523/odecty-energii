@@ -91,11 +91,8 @@ describe("priceForPeriod", () => {
     expect(r!.unitCost).toBeLessThan(7300); // lower than flat-20
   });
 
-  it("returns zero-priced breakdown when no tariffs exist", () => {
-    const r = priceForPeriod(readings, [], d("2026-01-01"), d("2026-12-31"));
-    expect(r).not.toBeNull();
-    expect(r!.total).toBe(0);
-    expect(r!.consumption).toBeCloseTo(365, 1);
+  it("returns null when no tariffs exist, so the price is unknown, not 0 Kč", () => {
+    expect(priceForPeriod(readings, [], d("2026-01-01"), d("2026-12-31"))).toBeNull();
   });
 });
 
