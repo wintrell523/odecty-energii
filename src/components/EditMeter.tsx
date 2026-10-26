@@ -10,8 +10,9 @@ export default async function EditMeter({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const meter = await prisma.meter.findUnique({ where: { id: Number(id) } });
+  const id = Number((await params).id);
+  if (!Number.isInteger(id)) notFound();
+  const meter = await prisma.meter.findUnique({ where: { id } });
   if (!meter) notFound();
 
   return (

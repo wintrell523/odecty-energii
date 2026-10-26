@@ -10,9 +10,10 @@ export default async function EditReading({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const id = Number((await params).id);
+  if (!Number.isInteger(id)) notFound();
   const [reading, meters] = await Promise.all([
-    prisma.reading.findUnique({ where: { id: Number(id) } }),
+    prisma.reading.findUnique({ where: { id } }),
     prisma.meter.findMany({ orderBy: { id: "asc" } }),
   ]);
   if (!reading) notFound();

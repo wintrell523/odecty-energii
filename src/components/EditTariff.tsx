@@ -10,9 +10,10 @@ export default async function EditTariff({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const id = Number((await params).id);
+  if (!Number.isInteger(id)) notFound();
   const [tariff, meters] = await Promise.all([
-    prisma.tariff.findUnique({ where: { id: Number(id) } }),
+    prisma.tariff.findUnique({ where: { id } }),
     prisma.meter.findMany({ orderBy: { id: "asc" } }),
   ]);
   if (!tariff) notFound();
