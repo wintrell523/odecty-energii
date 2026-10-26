@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="cs"
       className={`${bricolage.variable} ${instrument.variable} h-full antialiased`}
     >
-      <body className="min-h-full md:grid md:grid-cols-[13rem_1fr]">
+      <body className="min-h-full md:mx-auto md:grid md:max-w-[85rem] md:grid-cols-[13rem_1fr]">
         <aside className="md:sticky md:top-0 md:h-svh md:flex md:flex-col md:bg-surface md:px-3 md:py-6">
           <Link
             href="/"
@@ -49,7 +49,7 @@ export default function RootLayout({
           </p>
         </aside>
 
-        <main className="mx-auto w-full max-w-6xl px-5 pt-8 pb-28 md:px-10 md:py-10">
+        <main className="w-full max-w-6xl px-5 pt-8 pb-28 md:px-10 md:py-10">
           {children}
         </main>
         {modal}
