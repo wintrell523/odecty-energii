@@ -18,14 +18,14 @@ export default async function EditReading({
   if (!reading) notFound();
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto">
-      <header className="space-y-3 text-center">
-        <h1 className="display" style={{ fontSize: "2.4rem" }}>
+    <div className="space-y-6">
+      <header className="space-y-1">
+        <h1 className="display text-2xl">
           Upravit odečet
         </h1>
       </header>
 
-      <div className="card" style={{ padding: "2rem 2.25rem" }}>
+      <div>
         <ReadingForm
           meters={meters.map((m) => ({
             id: m.id,

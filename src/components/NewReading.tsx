@@ -36,18 +36,15 @@ export default async function NewReading({
   const defaultMeterId = meter ? Number(meter) : undefined;
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto">
-      <header className="space-y-3 text-center">
-        <p className="smallcaps text-[0.68rem] text-ink-muted">
-          nová poznámka do deníku
-        </p>
-        <h1 className="display" style={{ fontSize: "2.4rem" }}>
+    <div className="space-y-6">
+      <header className="space-y-1">
+        <h1 className="display text-2xl">
           Nový odečet
         </h1>
         <p className="section-sub">opiš číslo, které ti svítí na měřiči</p>
       </header>
 
-      <div className="card" style={{ padding: "2rem 2.25rem" }}>
+      <div>
         <ReadingForm
           meters={meters.map((m) => ({
             id: m.id,

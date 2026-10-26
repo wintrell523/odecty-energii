@@ -9,15 +9,15 @@ export default async function NewTariff() {
   });
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto">
-      <header className="space-y-3 text-center">
-        <h1 className="display" style={{ fontSize: "2.4rem" }}>
+    <div className="space-y-6">
+      <header className="space-y-1">
+        <h1 className="display text-2xl">
           Nová sazba
         </h1>
         <p className="section-sub">platí od zadaného data dál</p>
       </header>
 
-      <div className="card" style={{ padding: "2rem 2.25rem" }}>
+      <div>
         <TariffForm
           meters={meters.map((m) => ({
             id: m.id,
@@ -26,7 +26,7 @@ export default async function NewTariff() {
             unit: m.unit as Unit,
           }))}
         />
-        <p className="text-xs text-ink-muted mt-5 pt-4 border-t border-rule-soft">
+        <p className="text-xs text-ink-muted mt-5 pt-4 border-t border-rule">
           Sazba platí od zadaného data, dokud není zadána novější. Pro období
           před první sazbou se použije nejstarší.
         </p>

@@ -19,23 +19,17 @@ export default async function MetersPage() {
   });
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="section-head">
-          <div className="space-y-1">
-            <p className="smallcaps text-[0.68rem] text-ink-muted">
-              evidence
-            </p>
-            <h1 className="display">Měřiče</h1>
-            <p className="section-sub">
-              elektřina, voda, teplo · co měříš, to počítáš
-            </p>
-          </div>
-          <Link href="/meters/new" scroll={false} className="btn btn-primary">
-            + Nový měřič
-          </Link>
+    <div className="space-y-6">
+      <header className="section-head">
+        <div>
+          <h1 className="display">Měřiče</h1>
+          <p className="section-sub">
+            elektřina, voda, teplo · co měříš, to počítáš
+          </p>
         </div>
-        <div className="rule-dashed" />
+        <Link href="/meters/new" scroll={false} className="btn btn-primary">
+          + Nový měřič
+        </Link>
       </header>
 
       <section className="card overflow-x-auto">
@@ -57,13 +51,11 @@ export default async function MetersPage() {
               return (
                 <tr key={m.id}>
                   <td>
-                    <span className="flex items-center gap-2.5">
-                      <span
-                        className="accent-dot"
-                        style={{ ["--dot" as string]: `var(${accent.cssVar})` }}
-                        aria-hidden="true"
-                      />
-                      <span className="text-ink font-medium">{m.name}</span>
+                    <span
+                      className="meter-pill"
+                      style={{ "--accent": `var(${accent.cssVar})` } as React.CSSProperties}
+                    >
+                      {m.name}
                     </span>
                   </td>
                   <td className="text-ink-soft">
@@ -74,13 +66,9 @@ export default async function MetersPage() {
                   </td>
                   <td>
                     {m.active ? (
-                      <span className="smallcaps text-[0.65rem] text-cold">
-                        aktivní
-                      </span>
+                      <span className="text-ink-soft">aktivní</span>
                     ) : (
-                      <span className="smallcaps text-[0.65rem] text-ink-faint">
-                        neaktivní
-                      </span>
+                      <span className="text-ink-faint">neaktivní</span>
                     )}
                   </td>
                   <td className="text-right numerals text-ink">

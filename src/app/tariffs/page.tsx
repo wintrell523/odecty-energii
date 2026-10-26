@@ -32,26 +32,20 @@ export default async function TariffsPage() {
   }
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="section-head">
-          <div className="space-y-1">
-            <p className="smallcaps text-[0.68rem] text-ink-muted">
-              ceník
-            </p>
-            <h1 className="display">Sazby a ceny</h1>
-            <p className="section-sub">
-              historie tarifů — co kdy platilo, to se počítá
-            </p>
-          </div>
-          <Link href="/tariffs/new" scroll={false} className="btn btn-primary">
-            + Nová sazba
-          </Link>
+    <div className="space-y-6">
+      <header className="section-head">
+        <div>
+          <h1 className="display">Sazby a ceny</h1>
+          <p className="section-sub">
+            historie tarifů — co kdy platilo, to se počítá
+          </p>
         </div>
-        <div className="rule-dashed" />
+        <Link href="/tariffs/new" scroll={false} className="btn btn-primary">
+          + Nová sazba
+        </Link>
       </header>
 
-      <div className="space-y-5">
+      <div className="space-y-3">
         {meters.map((meter) => {
           const tlist = byMeter.get(meter.id) ?? [];
           const accent = accentFor(meter.type as MeterType);
@@ -65,22 +59,15 @@ export default async function TariffsPage() {
                 } as React.CSSProperties
               }
             >
-              <header className="flex items-baseline justify-between gap-3 mb-5 flex-wrap">
-                <h3 className="display flex items-center gap-2.5" style={{ fontSize: "1.25rem", fontWeight: 500 }}>
-                  <span
-                    className="accent-dot"
-                    style={{ ["--dot" as string]: `var(${accent.cssVar})` }}
-                    aria-hidden="true"
-                  />
-                  {meter.name}
-                </h3>
-                <span className="text-xs text-ink-muted">
+              <header className="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
+                <h2 className="display accent-text text-xl">{meter.name}</h2>
+                <span className="text-xs accent-muted">
                   {meterTypeLabel(meter.type as MeterType)} ·{" "}
                   {unitLabel(meter.unit as Unit)}
                 </span>
               </header>
               {tlist.length === 0 ? (
-                <p className="text-sm text-ink-muted">
+                <p className="text-sm accent-muted">
                   Žádné sazby. Bez sazby se nepočítá cena.
                 </p>
               ) : (
