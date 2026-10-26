@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db";
 import {
   formatNumber,
   formatPrice,
-  meterTypeIcon,
   meterTypeLabel,
   unitLabel,
   type MeterType,
@@ -150,7 +149,7 @@ export default async function ReportsPage({
                   {r.name}
                 </h2>
                 <span className="section-sub">
-                  {meterTypeIcon(r.type)} {meterTypeLabel(r.type)} ·{" "}
+                  {meterTypeLabel(r.type)} ·{" "}
                   {unitLabel(r.unit)}
                 </span>
               </div>

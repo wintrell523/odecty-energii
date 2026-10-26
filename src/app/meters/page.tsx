@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import {
-  meterTypeIcon,
   meterTypeLabel,
   unitLabel,
   type MeterType,
@@ -69,7 +68,6 @@ export default async function MetersPage() {
                     </span>
                   </td>
                   <td className="text-ink-soft">
-                    {meterTypeIcon(m.type as MeterType)}{" "}
                     {meterTypeLabel(m.type as MeterType)}
                   </td>
                   <td className="numerals text-ink-soft">

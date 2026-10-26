@@ -31,19 +31,6 @@ export function meterTypeLabel(t: MeterType): string {
   }
 }
 
-export function meterTypeIcon(t: MeterType): string {
-  switch (t) {
-    case "ELECTRICITY":
-      return "⚡";
-    case "COLD_WATER":
-      return "💧";
-    case "HOT_WATER":
-      return "🚿";
-    case "HEAT":
-      return "🔥";
-  }
-}
-
 const nf = new Intl.NumberFormat("cs-CZ", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 3,

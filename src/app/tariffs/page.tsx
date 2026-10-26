@@ -3,7 +3,6 @@ import {
   formatDate,
   formatNumber,
   formatPrice,
-  meterTypeIcon,
   meterTypeLabel,
   unitLabel,
   type MeterType,
@@ -95,7 +94,6 @@ export default async function TariffsPage() {
                   {meter.name}
                 </h3>
                 <span className="text-xs text-ink-muted">
-                  {meterTypeIcon(meter.type as MeterType)}{" "}
                   {meterTypeLabel(meter.type as MeterType)} ·{" "}
                   {unitLabel(meter.unit as Unit)}
                 </span>

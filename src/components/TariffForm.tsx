@@ -6,7 +6,6 @@ import {
   type TariffActionResult,
 } from "@/app/actions/tariffs";
 import {
-  meterTypeIcon,
   meterTypeLabel,
   toIsoDate,
   unitLabel,
@@ -33,7 +32,7 @@ export default function TariffForm({ meters }: { meters: Meter[] }) {
         <select id="meterId" name="meterId" required>
           {meters.map((m) => (
             <option key={m.id} value={m.id}>
-              {meterTypeIcon(m.type)} {m.name} ({meterTypeLabel(m.type)},{" "}
+              {m.name} ({meterTypeLabel(m.type)},{" "}
               {unitLabel(m.unit)})
             </option>
           ))}

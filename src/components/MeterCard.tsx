@@ -3,7 +3,6 @@ import {
   formatDate,
   formatNumber,
   formatPrice,
-  meterTypeIcon,
   meterTypeLabel,
   unitLabel,
   type MeterType,
@@ -53,7 +52,7 @@ export default function MeterCard({
           </h3>
         </div>
         <span className="text-xs text-ink-muted shrink-0 mt-1">
-          {meterTypeIcon(meter.type)} {meterTypeLabel(meter.type)}
+          {meterTypeLabel(meter.type)}
         </span>
       </header>
 

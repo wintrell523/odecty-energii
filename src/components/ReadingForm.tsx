@@ -8,7 +8,6 @@ import {
   type ReadingActionResult,
 } from "@/app/actions/readings";
 import {
-  meterTypeIcon,
   meterTypeLabel,
   toIsoDate,
   unitLabel,
@@ -91,7 +90,7 @@ export default function ReadingForm({
         >
           {meters.map((m) => (
             <option key={m.id} value={m.id}>
-              {meterTypeIcon(m.type)} {m.name} ({meterTypeLabel(m.type)},{" "}
+              {m.name} ({meterTypeLabel(m.type)},{" "}
               {unitLabel(m.unit)})
             </option>
           ))}
