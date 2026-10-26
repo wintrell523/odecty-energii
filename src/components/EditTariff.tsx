@@ -1,6 +1,6 @@
 import { notFound, redirect, RedirectType } from "next/navigation";
 import { prisma } from "@/lib/db";
-import type { MeterType, Unit } from "@/lib/format";
+import { toMeterOption } from "@/lib/format";
 import TariffForm from "@/components/TariffForm";
 import DeleteButton from "@/components/DeleteButton";
 import { deleteTariff } from "@/app/actions/tariffs";
@@ -26,12 +26,7 @@ export default async function EditTariff({
 
       <div>
         <TariffForm
-          meters={meters.map((m) => ({
-            id: m.id,
-            name: m.name,
-            type: m.type as MeterType,
-            unit: m.unit as Unit,
-          }))}
+          meters={meters.map(toMeterOption)}
           initial={{
             id: tariff.id,
             meterId: tariff.meterId,

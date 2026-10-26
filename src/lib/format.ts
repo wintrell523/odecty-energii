@@ -31,6 +31,19 @@ export function meterTypeLabel(t: MeterType): string {
   }
 }
 
+/** A meter as the reading and tariff forms show it in their select. */
+export type MeterOption = { id: number; name: string; type: MeterType; unit: Unit };
+
+/** Narrows a database meter row (string enums) to a MeterOption. */
+export function toMeterOption(m: {
+  id: number;
+  name: string;
+  type: string;
+  unit: string;
+}): MeterOption {
+  return { id: m.id, name: m.name, type: m.type as MeterType, unit: m.unit as Unit };
+}
+
 const nf = new Intl.NumberFormat("cs-CZ", {
   minimumFractionDigits: 0,
   maximumFractionDigits: 3,

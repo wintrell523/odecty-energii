@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import type { MeterType, Unit } from "@/lib/format";
+import { toMeterOption } from "@/lib/format";
 import ReadingForm from "@/components/ReadingForm";
 
 export default async function NewReading({
@@ -47,12 +47,7 @@ export default async function NewReading({
 
       <div>
         <ReadingForm
-          meters={meters.map((m) => ({
-            id: m.id,
-            name: m.name,
-            type: m.type as MeterType,
-            unit: m.unit as Unit,
-          }))}
+          meters={meters.map(toMeterOption)}
           defaultMeterId={defaultMeterId}
         />
       </div>

@@ -1,6 +1,6 @@
 import { notFound, redirect, RedirectType } from "next/navigation";
 import { prisma } from "@/lib/db";
-import type { MeterType, Unit } from "@/lib/format";
+import { toMeterOption } from "@/lib/format";
 import ReadingForm from "@/components/ReadingForm";
 import DeleteButton from "@/components/DeleteButton";
 import { deleteReading } from "@/app/actions/readings";
@@ -28,12 +28,7 @@ export default async function EditReading({
 
       <div>
         <ReadingForm
-          meters={meters.map((m) => ({
-            id: m.id,
-            name: m.name,
-            type: m.type as MeterType,
-            unit: m.unit as Unit,
-          }))}
+          meters={meters.map(toMeterOption)}
           initial={{
             id: reading.id,
             meterId: reading.meterId,

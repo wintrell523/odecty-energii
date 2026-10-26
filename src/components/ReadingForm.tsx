@@ -11,14 +11,12 @@ import {
   meterTypeLabel,
   toIsoDate,
   unitLabel,
-  type MeterType,
-  type Unit,
+  type MeterOption,
 } from "@/lib/format";
 
-type Meter = { id: number; name: string; type: MeterType; unit: Unit };
 
 type Props = {
-  meters: Meter[];
+  meters: MeterOption[];
   initial?: {
     id: number;
     meterId: number;

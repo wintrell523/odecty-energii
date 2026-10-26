@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { MeterType, Unit } from "@/lib/format";
+import { toMeterOption } from "@/lib/format";
 import TariffForm from "@/components/TariffForm";
 
 export default async function NewTariff() {
@@ -19,12 +19,7 @@ export default async function NewTariff() {
 
       <div>
         <TariffForm
-          meters={meters.map((m) => ({
-            id: m.id,
-            name: m.name,
-            type: m.type as MeterType,
-            unit: m.unit as Unit,
-          }))}
+          meters={meters.map(toMeterOption)}
         />
         <p className="text-xs text-ink-muted mt-5 pt-4 border-t border-rule">
           Sazba platí od zadaného data, dokud není zadána novější. Pro období
