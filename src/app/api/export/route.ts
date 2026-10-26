@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const yearParam = url.searchParams.get("year");
   const year = parseYear(yearParam);
-  if (yearParam !== null && year === null) {
+  // An empty ?year= means no filter, the same as no parameter.
+  if (yearParam && year === null) {
     return NextResponse.json({ error: "Neplatný rok" }, { status: 400 });
   }
 
@@ -36,16 +37,23 @@ export async function GET(req: NextRequest) {
     include: { meter: true },
   });
 
-  // Include each affected meter's history so the first exported row can show
-  // consumption relative to its actual preceding reading.
+  // Include each affected meter's last reading before the period, so the first
+  // exported row can show consumption relative to its actual preceding reading.
   const meterIds = [...new Set(selectedReadings.map((reading) => reading.meterId))];
-  const precedingReadings = periodStart && meterIds.length > 0
-    ? await prisma.reading.findMany({
-        where: { meterId: { in: meterIds }, date: { lt: periodStart } },
-        orderBy: [{ meterId: "asc" }, { date: "asc" }],
-        include: { meter: true },
-      })
+  const precedingReadings = periodStart
+    ? (
+        await Promise.all(
+          meterIds.map((meterId) =>
+            prisma.reading.findFirst({
+              where: { meterId, date: { lt: periodStart } },
+              orderBy: { date: "desc" },
+              include: { meter: true },
+            }),
+          ),
+        )
+      ).filter((reading) => reading != null)
     : [];
+  // byMeter below keeps insertion order, so each meter's preceding reading stays first.
   const readings = [...precedingReadings, ...selectedReadings];
 
   // We need previous reading for consumption — fetch all per meter and filter for display
