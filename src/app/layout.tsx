@@ -34,10 +34,10 @@ export default function RootLayout({
       className={`${bricolage.variable} ${instrument.variable} h-full antialiased`}
     >
       <body className="min-h-full md:mx-auto md:grid md:max-w-[85rem] md:grid-cols-[13rem_1fr]">
-        <aside className="md:sticky md:top-0 md:h-svh md:flex md:flex-col md:bg-surface md:px-3 md:py-6">
+        <aside className="md:sticky md:top-0 md:h-svh md:flex md:flex-col md:py-10 md:pl-5">
           <Link
             href="/"
-            className="display hidden md:block px-3 pb-6 text-lg leading-tight text-ink"
+            className="display hidden md:block px-3 pb-8 text-xl leading-tight text-ink"
           >
             Odečty
             <br />

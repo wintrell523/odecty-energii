@@ -385,9 +385,10 @@ button.chip {
 }
 .nav-link:hover {
   color: var(--color-ink);
+  background: var(--color-surface);
 }
 .nav-link.is-active {
-  background: var(--color-surface-2);
+  background: var(--color-surface);
   color: var(--color-ink);
   font-weight: 600;
 }
