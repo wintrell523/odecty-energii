@@ -51,3 +51,4 @@ prisma.config.ts.bak
 # Brainstorm mockups
 .superpowers/
 .playwright-mcp/
+.playwright-cli/
