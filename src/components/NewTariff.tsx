@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/db";
 import { toMeterOption } from "@/lib/format";
 import TariffForm from "@/components/TariffForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function NewTariff() {
+  const user = await requireUser();
   const meters = await prisma.meter.findMany({
-    where: { active: true },
+    where: { active: true, ownerId: user.id },
     orderBy: { id: "asc" },
   });
 

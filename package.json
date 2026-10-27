@@ -7,10 +7,11 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
+    "test": "prisma generate && vitest run",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "auth:owner": "node --import tsx scripts/owner.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

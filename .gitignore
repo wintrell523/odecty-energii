@@ -46,6 +46,7 @@ next-env.d.ts
 prisma/dev.db
 prisma/dev.db-journal
 prisma.config.ts.bak
+!prisma/migrations/**/migration.sql
 
 # Brainstorm mockups
 .superpowers/

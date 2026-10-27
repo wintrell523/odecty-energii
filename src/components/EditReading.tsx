@@ -5,6 +5,7 @@ import ReadingForm from "@/components/ReadingForm";
 import DeleteButton from "@/components/DeleteButton";
 import { deleteReading } from "@/app/actions/readings";
 import { readingsListUrl } from "@/lib/filters";
+import { requireUser } from "@/lib/auth";
 
 export default async function EditReading({
   params,
@@ -13,12 +14,13 @@ export default async function EditReading({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ meter?: string }>;
 }) {
+  const user = await requireUser();
   const id = Number((await params).id);
   const listUrl = readingsListUrl((await searchParams).meter);
   if (!Number.isInteger(id)) notFound();
   const [reading, meters] = await Promise.all([
-    prisma.reading.findUnique({ where: { id } }),
-    prisma.meter.findMany({ orderBy: { id: "asc" } }),
+    prisma.reading.findFirst({ where: { id, meter: { ownerId: user.id } } }),
+    prisma.meter.findMany({ where: { ownerId: user.id }, orderBy: { id: "asc" } }),
   ]);
   if (!reading) notFound();
 

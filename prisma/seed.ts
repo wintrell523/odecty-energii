@@ -13,12 +13,14 @@ async function main() {
     return;
   }
 
+  const owner = await prisma.user.findFirst({ where: { isOwner: true } });
+
   await prisma.meter.createMany({
     data: [
-      { type: "ELECTRICITY", name: "Elektřina", unit: "KWH" },
-      { type: "COLD_WATER", name: "Studená voda", unit: "M3" },
-      { type: "HOT_WATER", name: "Teplá voda", unit: "M3" },
-      { type: "HEAT", name: "Teplo", unit: "GJ" },
+      { type: "ELECTRICITY", name: "Elektřina", unit: "KWH", ownerId: owner?.id },
+      { type: "COLD_WATER", name: "Studená voda", unit: "M3", ownerId: owner?.id },
+      { type: "HOT_WATER", name: "Teplá voda", unit: "M3", ownerId: owner?.id },
+      { type: "HEAT", name: "Teplo", unit: "GJ", ownerId: owner?.id },
     ],
   });
 

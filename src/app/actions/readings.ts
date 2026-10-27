@@ -4,12 +4,15 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { readingInput, zodErrors } from "@/lib/schemas";
 import { parseIsoDate } from "@/lib/format";
+import { requireUser } from "@/lib/auth";
+import { notFound } from "next/navigation";
 
 export type ReadingActionResult =
   | { ok: true; id?: number }
   | { ok: false; errors: Record<string, string> };
 
 export async function createReading(_prev: ReadingActionResult | null, formData: FormData): Promise<ReadingActionResult> {
+  const user = await requireUser();
   const parsed = readingInput.safeParse({
     meterId: formData.get("meterId"),
     date: formData.get("date"),
@@ -17,6 +20,8 @@ export async function createReading(_prev: ReadingActionResult | null, formData:
     note: formData.get("note") ?? "",
   });
   if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
+  const meter = await prisma.meter.findFirst({ where: { id: parsed.data.meterId, ownerId: user.id } });
+  if (!meter) return { ok: false, errors: { meterId: "Měřič nebyl nalezen." } };
 
   const reading = await prisma.reading.create({
     data: {
@@ -33,6 +38,7 @@ export async function createReading(_prev: ReadingActionResult | null, formData:
 }
 
 export async function updateReading(id: number, _prev: ReadingActionResult | null, formData: FormData): Promise<ReadingActionResult> {
+  const user = await requireUser();
   const parsed = readingInput.safeParse({
     meterId: formData.get("meterId"),
     date: formData.get("date"),
@@ -40,9 +46,11 @@ export async function updateReading(id: number, _prev: ReadingActionResult | nul
     note: formData.get("note") ?? "",
   });
   if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
+  const meter = await prisma.meter.findFirst({ where: { id: parsed.data.meterId, ownerId: user.id } });
+  if (!meter) return { ok: false, errors: { meterId: "Měřič nebyl nalezen." } };
 
-  await prisma.reading.update({
-    where: { id },
+  const changed = await prisma.reading.updateMany({
+    where: { id, meter: { ownerId: user.id } },
     data: {
       meterId: parsed.data.meterId,
       date: parseIsoDate(parsed.data.date),
@@ -50,6 +58,7 @@ export async function updateReading(id: number, _prev: ReadingActionResult | nul
       note: parsed.data.note || null,
     },
   });
+  if (changed.count !== 1) notFound();
   revalidatePath("/readings");
   revalidatePath("/");
   revalidatePath("/reports");
@@ -57,7 +66,9 @@ export async function updateReading(id: number, _prev: ReadingActionResult | nul
 }
 
 export async function deleteReading(id: number) {
-  await prisma.reading.delete({ where: { id } });
+  const user = await requireUser();
+  const deleted = await prisma.reading.deleteMany({ where: { id, meter: { ownerId: user.id } } });
+  if (deleted.count !== 1) notFound();
   revalidatePath("/readings");
   revalidatePath("/");
   revalidatePath("/reports");

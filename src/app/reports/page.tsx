@@ -19,6 +19,7 @@ import {
 import { accentFor } from "@/lib/theme";
 import ConsumptionChart from "@/components/ConsumptionChart";
 import { parseYear } from "@/lib/years";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,7 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ year?: string }>;
 }) {
+  const user = await requireUser();
   const { year: yearParam } = await searchParams;
   const currentYear = new Date().getFullYear();
   const year = parseYear(yearParam) ?? currentYear;
@@ -39,7 +41,7 @@ export default async function ReportsPage({
   const to = new Date(year + 1, 0, 1);
 
   const meters = await prisma.meter.findMany({
-    where: { active: true },
+    where: { active: true, ownerId: user.id },
     orderBy: { id: "asc" },
     include: {
       readings: { orderBy: { date: "asc" } },
@@ -47,7 +49,7 @@ export default async function ReportsPage({
     },
   });
 
-  const allReadings = await prisma.reading.findMany({ select: { date: true } });
+  const allReadings = await prisma.reading.findMany({ where: { meter: { ownerId: user.id } }, select: { date: true } });
   const years = new Set<number>([year, currentYear]);
   for (const r of allReadings) years.add(r.date.getFullYear());
   const yearList = Array.from(years).sort((a, b) => b - a);

@@ -10,13 +10,16 @@ import {
   type Unit,
 } from "@/lib/format";
 import { accentFor } from "@/lib/theme";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function TariffsPage() {
+  const user = await requireUser();
   const [meters, tariffs] = await Promise.all([
-    prisma.meter.findMany({ where: { active: true }, orderBy: { id: "asc" } }),
+    prisma.meter.findMany({ where: { active: true, ownerId: user.id }, orderBy: { id: "asc" } }),
     prisma.tariff.findMany({
+      where: { meter: { ownerId: user.id } },
       orderBy: [{ meterId: "asc" }, { validFrom: "desc" }],
       include: { meter: true },
     }),

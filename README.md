@@ -11,6 +11,7 @@ Lokální webová aplikace pro evidenci odečtů energií — náhrada za ručn�
 - Dashboard se souhrnem aktuálního měsíce pro každý měřič.
 - Souhrny za kalendářní rok s grafem měsíční spotřeby.
 - Export všech odečtů do CSV (UTF-8 BOM, otevíratelné v Excelu CZ).
+- Soukromé účty se jménem a heslem. Každý účet vidí jen vlastní měřiče a jejich data; nové účty zakládá správce.
 
 ## Spuštění
 
@@ -21,6 +22,7 @@ npm install
 npx prisma generate
 npx prisma db push          # vytvoří prázdnou lokální DB při prvním běhu
 npm run db:seed             # založí 4 výchozí měřiče (přeskočí pokud existují)
+npm run auth:owner -- bootstrap honza  # zeptá se na heslo; přiřadí existující data správci
 npm run dev                 # http://localhost:3000
 ```
 
@@ -35,12 +37,20 @@ npm start
 
 Bez `TURSO_DATABASE_URL` používá aplikace lokální `prisma/dev.db` (SQLite). Soubor je `.gitignored`; pro zálohu jej stačí zkopírovat. S `TURSO_DATABASE_URL` a `TURSO_AUTH_TOKEN` používá hostovanou databázi Turso. Vercel dodává obě proměnné přes integraci Turso; `vercel env pull` je může stáhnout do ignorovaného `.env.local` pro lokální přístup ke stejné online databázi. Lokální soubor se s online databází automaticky nesynchronizuje.
 
+### Účty a nasazení stávajících dat
+
+- Přihlašovací jména mají 3–32 znaků (`a–z`, čísla, `_`, `-`) a nerozlišují velikost písmen. Heslo má 12–128 znaků. Správce vytvoří další účty na stránce **Účet → Správa účtů** a předá dočasná hesla mimo aplikaci. Nový uživatel si heslo při prvním přihlášení změní.
+- Správce může členovi resetovat heslo nebo vypnout přístup. Vypnutí ponechá data v databázi. Přihlášený uživatel si může změnit vlastní heslo. Ztracené heslo správce lze resetovat příkazem `npm run auth:owner -- reset`; skript vždy zruší staré relace.
+- Skript `auth:owner` načítá jen proměnné prostředí procesu. Před zadáním hesla vypíše, zda míří na lokální SQLite nebo Turso. Pro Turso nastavte `TURSO_DATABASE_URL` a `TURSO_AUTH_TOKEN` v prostředí; pokud jsou v `.env.local`, použijte `node --env-file=.env.local --import tsx scripts/owner.ts bootstrap honza` (nebo `reset`). Heslo se zadává skrytě na terminálu, ne jako argument příkazu.
+- Před nasazením této verze do produkce zálohujte Turso databázi a aplikujte `prisma/migrations/20261027120000_user_auth/migration.sql` pomocí `turso db shell odecty-energii-data < prisma/migrations/20261027120000_user_auth/migration.sql`. Potom spusťte `auth:owner bootstrap` proti Turso. Skript vytvoří jediný správcovský účet a přiřadí mu všechny dosavadní měřiče včetně odečtů a sazeb; opakované spuštění odmítne.
+- Vercel Authentication ponechte zapnutou pro všechny deploymenty, dokud není nová verze nasazena, správce přihlášen a izolace dat ověřena. Teprve poté přepněte ochranu na **Standard Protection**, která dál chrání preview. Produkce pak používá přihlášení aplikace.
+
 ## Struktura projektu
 
 ```
 prisma.config.ts       # Prisma 7 konfigurace (datasource URL, cesta k migracím)
 prisma/
-  schema.prisma        # datový model (Meter, Reading, Tariff)
+  schema.prisma        # datový model (User, Session, Meter, Reading, Tariff)
   seed.ts              # výchozí měřiče
 src/
   generated/prisma/    # vygenerovaný Prisma client (gitignored)

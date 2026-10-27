@@ -4,15 +4,17 @@ import type { MeterType, Unit } from "@/lib/format";
 import MeterForm from "@/components/MeterForm";
 import DeleteButton from "@/components/DeleteButton";
 import { deleteMeter } from "@/app/actions/meters";
+import { requireUser } from "@/lib/auth";
 
 export default async function EditMeter({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await requireUser();
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
-  const meter = await prisma.meter.findUnique({ where: { id } });
+  const meter = await prisma.meter.findFirst({ where: { id, ownerId: user.id } });
   if (!meter) notFound();
 
   return (

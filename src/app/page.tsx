@@ -8,12 +8,14 @@ import {
   type TariffRow,
 } from "@/lib/calculations";
 import { formatPrice, type MeterType, type Unit } from "@/lib/format";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
+  const user = await requireUser();
   const meters = await prisma.meter.findMany({
-    where: { active: true },
+    where: { active: true, ownerId: user.id },
     orderBy: { id: "asc" },
     include: {
       readings: { orderBy: { date: "asc" } },

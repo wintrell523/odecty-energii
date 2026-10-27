@@ -27,8 +27,35 @@ model Meter {
   unit      Unit
   active    Boolean   @default(true)
   createdAt DateTime  @default(now())
+  ownerId   Int?
+  owner     User?     @relation(fields: [ownerId], references: [id])
   readings  Reading[]
   tariffs   Tariff[]
+
+  @@index([ownerId])
+}
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  username           String    @unique
+  passwordHash       String
+  isOwner            Boolean   @default(false)
+  disabled           Boolean   @default(false)
+  mustChangePassword Boolean   @default(true)
+  failedLogins       Int       @default(0)
+  lockedUntil        DateTime?
+  meters             Meter[]
+  sessions           Session[]
+}
+
+model Session {
+  tokenHash  String   @id
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Reading {

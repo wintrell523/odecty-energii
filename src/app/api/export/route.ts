@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { withConsumption } from "@/lib/calculations";
 import { formatDate, unitLabel, meterTypeLabel, type MeterType, type Unit } from "@/lib/format";
 import { parseYear } from "@/lib/years";
+import { currentUser } from "@/lib/auth";
 
 function csvEscape(v: string | number | null): string {
   if (v == null) return "";
@@ -17,6 +18,8 @@ function csvNumber(n: number | null, decimals = 3): string {
 }
 
 export async function GET(req: NextRequest) {
+  const user = await currentUser();
+  if (!user || user.mustChangePassword) return new NextResponse(null, { status: 401 });
   const url = new URL(req.url);
   const yearParam = url.searchParams.get("year");
   const year = parseYear(yearParam);
@@ -27,9 +30,9 @@ export async function GET(req: NextRequest) {
 
   const periodStart = year ? new Date(year, 0, 1) : null;
   const periodEnd = year ? new Date(year + 1, 0, 1) : null;
-  const where = periodStart && periodEnd
+  const where = { meter: { ownerId: user.id }, ...(periodStart && periodEnd
     ? { date: { gte: periodStart, lt: periodEnd } }
-    : undefined;
+    : {}) };
 
   const selectedReadings = await prisma.reading.findMany({
     where,
@@ -45,7 +48,7 @@ export async function GET(req: NextRequest) {
         await Promise.all(
           meterIds.map((meterId) =>
             prisma.reading.findFirst({
-              where: { meterId, date: { lt: periodStart } },
+              where: { meterId, meter: { ownerId: user.id }, date: { lt: periodStart } },
               orderBy: { date: "desc" },
               include: { meter: true },
             }),
@@ -99,6 +102,7 @@ export async function GET(req: NextRequest) {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "no-store",
     },
   });
 }
