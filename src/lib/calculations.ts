@@ -58,6 +58,15 @@ export function consumptionBetween(
 ): number | null {
   if (readings.length < 2 || from >= to) return null;
   const sorted = [...readings].sort((a, b) => a.date.getTime() - b.date.getTime());
+  return consumptionBetweenSorted(sorted, from, to);
+}
+
+function consumptionBetweenSorted(
+  sorted: ReadingRow[],
+  from: Date,
+  to: Date,
+): number | null {
+  if (sorted.length < 2 || from >= to) return null;
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
   if (to < first.date || from > last.date) return null;
@@ -139,7 +148,8 @@ export function priceForPeriod(
   to: Date,
 ): PriceBreakdown | null {
   if (tariffs.length === 0) return null;
-  const totalConsumption = consumptionBetween(readings, from, to);
+  const sortedReadings = [...readings].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const totalConsumption = consumptionBetweenSorted(sortedReadings, from, to);
   if (totalConsumption == null) return null;
 
   const segs = tariffSegments(tariffs, from, to);
@@ -147,8 +157,7 @@ export function priceForPeriod(
   if (totalDays <= 0) return null;
 
   const segments = segs.map((s) => {
-    const days = differenceInCalendarDays(s.to, s.from);
-    const cons = totalConsumption * (days / totalDays);
+    const cons = consumptionBetweenSorted(sortedReadings, s.from, s.to) ?? 0;
     const unitCost = cons * s.tariff.unitPrice;
     const feeCost = s.tariff.monthlyFee * monthsBetween(s.from, s.to);
     return {

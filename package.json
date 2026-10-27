@@ -14,19 +14,16 @@
     "auth:owner": "node --import tsx scripts/owner.ts"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
     "@prisma/adapter-libsql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "better-sqlite3": "^12.10.0",
     "date-fns": "^4.1.0",
-    "decimal.js": "^10.6.0",
     "dotenv": "^17.4.2",
     "next": "16.4.3",
     "prisma": "^7.8.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-hook-form": "^7.76.0",
     "recharts": "^3.8.1",
     "zod": "^4.4.3"
   },
