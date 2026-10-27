@@ -10,6 +10,7 @@ import {
 } from "@/lib/format";
 import { withConsumption, gjToKwh } from "@/lib/calculations";
 import { accentFor } from "@/lib/theme";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,15 +19,16 @@ export default async function ReadingsPage({
 }: {
   searchParams: Promise<{ meter?: string }>;
 }) {
+  const user = await requireUser();
   const { meter } = await searchParams;
   const meterId = meter ? Number(meter) : undefined;
   // Carried into the edit and new links, so closing the modal returns to this filter.
   const filterQuery = meterId ? `?meter=${meterId}` : "";
 
   const [meters, readings] = await Promise.all([
-    prisma.meter.findMany({ orderBy: { id: "asc" } }),
+    prisma.meter.findMany({ where: { ownerId: user.id }, orderBy: { id: "asc" } }),
     prisma.reading.findMany({
-      where: meterId ? { meterId } : undefined,
+      where: { meter: { ownerId: user.id }, ...(meterId ? { meterId } : {}) },
       orderBy: [{ meterId: "asc" }, { date: "asc" }],
       include: { meter: true },
     }),

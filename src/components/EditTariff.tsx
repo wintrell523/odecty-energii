@@ -4,17 +4,19 @@ import { toMeterOption } from "@/lib/format";
 import TariffForm from "@/components/TariffForm";
 import DeleteButton from "@/components/DeleteButton";
 import { deleteTariff } from "@/app/actions/tariffs";
+import { requireUser } from "@/lib/auth";
 
 export default async function EditTariff({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await requireUser();
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
   const [tariff, meters] = await Promise.all([
-    prisma.tariff.findUnique({ where: { id } }),
-    prisma.meter.findMany({ orderBy: { id: "asc" } }),
+    prisma.tariff.findFirst({ where: { id, meter: { ownerId: user.id } } }),
+    prisma.meter.findMany({ where: { ownerId: user.id }, orderBy: { id: "asc" } }),
   ]);
   if (!tariff) notFound();
 

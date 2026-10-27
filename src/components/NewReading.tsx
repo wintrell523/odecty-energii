@@ -2,15 +2,17 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { toMeterOption } from "@/lib/format";
 import ReadingForm from "@/components/ReadingForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function NewReading({
   searchParams,
 }: {
   searchParams: Promise<{ meter?: string }>;
 }) {
+  const user = await requireUser();
   const { meter } = await searchParams;
   const meters = await prisma.meter.findMany({
-    where: { active: true },
+    where: { active: true, ownerId: user.id },
     orderBy: { id: "asc" },
   });
 

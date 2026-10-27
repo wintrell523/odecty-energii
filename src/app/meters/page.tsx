@@ -7,11 +7,14 @@ import {
   type Unit,
 } from "@/lib/format";
 import { accentFor } from "@/lib/theme";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function MetersPage() {
+  const user = await requireUser();
   const meters = await prisma.meter.findMany({
+    where: { ownerId: user.id },
     orderBy: { id: "asc" },
     include: { _count: { select: { readings: true, tariffs: true } } },
   });
