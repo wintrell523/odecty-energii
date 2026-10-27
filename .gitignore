@@ -52,3 +52,6 @@ prisma.config.ts.bak
 .superpowers/
 .playwright-mcp/
 .playwright-cli/
+
+# Database dumps — contain user data, do not commit
+backups/
