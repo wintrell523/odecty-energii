@@ -22,6 +22,7 @@ npm install
 npx prisma generate
 npx prisma db push          # vytvoří prázdnou lokální DB při prvním běhu
 npm run db:seed             # založí 4 výchozí měřiče (přeskočí pokud existují)
+DATABASE_URL=file:./prisma/dev.db npx prisma migrate deploy  # u existující lokální DB doplní tabulky účtů
 npm run auth:owner -- bootstrap honza  # zeptá se na heslo; přiřadí existující data správci
 npm run dev                 # http://localhost:3000
 ```
