@@ -4,13 +4,7 @@ import { withConsumption } from "@/lib/calculations";
 import { formatDate, unitLabel, meterTypeLabel, type MeterType, type Unit } from "@/lib/format";
 import { parseYear } from "@/lib/years";
 import { currentUser } from "@/lib/auth";
-
-function csvEscape(v: string | number | null): string {
-  if (v == null) return "";
-  const s = String(v);
-  if (/[";\n,]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
+import { escapeCsvCell, escapeCsvText } from "@/lib/csv";
 
 function csvNumber(n: number | null, decimals = 3): string {
   if (n == null) return "";
@@ -81,18 +75,18 @@ export async function GET(req: NextRequest) {
       if (periodStart && e.date < periodStart) continue;
       rows.push([
         formatDate(e.date),
-        m.name,
+        escapeCsvText(m.name),
         meterTypeLabel(m.type as MeterType),
         csvNumber(e.value),
         unitLabel(m.unit as Unit),
         csvNumber(e.consumption),
         e.days != null ? String(e.days) : "",
-        rs[i].note ?? "",
+        escapeCsvText(rs[i].note),
       ]);
     }
   }
 
-  const csv = rows.map((r) => r.map(csvEscape).join(";")).join("\r\n");
+  const csv = rows.map((r) => r.map(escapeCsvCell).join(";")).join("\r\n");
   // UTF-8 BOM so Excel opens CZ diakritika correctly
   const body = "\uFEFF" + csv;
 

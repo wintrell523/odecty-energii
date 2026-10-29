@@ -11,6 +11,20 @@ export type ReadingActionResult =
   | { ok: true; id?: number }
   | { ok: false; errors: Record<string, string> };
 
+// shortcut: concurrent submissions and legacy duplicates can bypass this check; resolve duplicates before adding a unique index.
+async function hasReadingOnDate(meterId: number, date: Date, exceptId?: number) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + 1);
+  return prisma.reading.findFirst({
+    where: {
+      meterId,
+      date: { gte: date, lt: nextDate },
+      ...(exceptId === undefined ? {} : { NOT: { id: exceptId } }),
+    },
+    select: { id: true },
+  });
+}
+
 export async function createReading(_prev: ReadingActionResult | null, formData: FormData): Promise<ReadingActionResult> {
   const user = await requireUser();
   const parsed = readingInput.safeParse({
@@ -22,11 +36,15 @@ export async function createReading(_prev: ReadingActionResult | null, formData:
   if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
   const meter = await prisma.meter.findFirst({ where: { id: parsed.data.meterId, ownerId: user.id } });
   if (!meter) return { ok: false, errors: { meterId: "Měřič nebyl nalezen." } };
+  const date = parseIsoDate(parsed.data.date);
+  if (await hasReadingOnDate(parsed.data.meterId, date)) {
+    return { ok: false, errors: { date: "Pro tento měřič už odečet v tento den existuje." } };
+  }
 
   const reading = await prisma.reading.create({
     data: {
       meterId: parsed.data.meterId,
-      date: parseIsoDate(parsed.data.date),
+      date,
       value: parsed.data.value,
       note: parsed.data.note || null,
     },
@@ -48,12 +66,16 @@ export async function updateReading(id: number, _prev: ReadingActionResult | nul
   if (!parsed.success) return { ok: false, errors: zodErrors(parsed.error) };
   const meter = await prisma.meter.findFirst({ where: { id: parsed.data.meterId, ownerId: user.id } });
   if (!meter) return { ok: false, errors: { meterId: "Měřič nebyl nalezen." } };
+  const date = parseIsoDate(parsed.data.date);
+  if (await hasReadingOnDate(parsed.data.meterId, date, id)) {
+    return { ok: false, errors: { date: "Pro tento měřič už odečet v tento den existuje." } };
+  }
 
   const changed = await prisma.reading.updateMany({
     where: { id, meter: { ownerId: user.id } },
     data: {
       meterId: parsed.data.meterId,
-      date: parseIsoDate(parsed.data.date),
+      date,
       value: parsed.data.value,
       note: parsed.data.note || null,
     },

@@ -41,11 +41,13 @@ export async function changePassword(formData: FormData) {
       !(await verifyPassword(oldPassword, user.passwordHash))) {
     redirect("/account/password?error=invalid");
   }
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { passwordHash: await hashPassword(newPassword), mustChangePassword: false },
-  });
-  await prisma.session.deleteMany({ where: { userId: user.id } });
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(newPassword), mustChangePassword: false },
+    }),
+    prisma.session.deleteMany({ where: { userId: user.id } }),
+  ]);
   await createSession(user.id);
   redirect("/account?status=password");
 }
@@ -76,12 +78,17 @@ export async function resetMemberPassword(id: number, formData: FormData) {
   await requireOwner();
   const password = formData.get("password");
   if (!validPassword(password)) redirect("/account/users?error=invalid");
-  const changed = await prisma.user.updateMany({
-    where: { id, isOwner: false },
-    data: { passwordHash: await hashPassword(password), mustChangePassword: true, failedLogins: 0, lockedUntil: null },
+  const passwordHash = await hashPassword(password);
+  const found = await prisma.$transaction(async (tx) => {
+    const changed = await tx.user.updateMany({
+      where: { id, isOwner: false },
+      data: { passwordHash, mustChangePassword: true, failedLogins: 0, lockedUntil: null },
+    });
+    if (changed.count !== 1) return false;
+    await tx.session.deleteMany({ where: { userId: id } });
+    return true;
   });
-  if (changed.count !== 1) redirect("/account/users?error=missing");
-  await prisma.session.deleteMany({ where: { userId: id } });
+  if (!found) redirect("/account/users?error=missing");
   redirect("/account/users?status=reset");
 }
 

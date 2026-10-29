@@ -20,11 +20,18 @@ Předpoklady: Node.js 20+.
 ```bash
 npm install
 npx prisma generate
-npx prisma db push          # vytvoří prázdnou lokální DB při prvním běhu
-npm run db:seed             # založí 4 výchozí měřiče (přeskočí pokud existují)
-DATABASE_URL=file:./prisma/dev.db npx prisma migrate deploy  # u existující lokální DB doplní tabulky účtů
+DATABASE_URL=file:./prisma/dev.db npx prisma migrate deploy   # vytvoří tabulky podle migrací
+DATABASE_URL=file:./prisma/dev.db npm run db:seed             # založí 4 výchozí měřiče
 npm run auth:owner -- bootstrap honza  # zeptá se na heslo; přiřadí existující data správci
 npm run dev                 # http://localhost:3000
+```
+
+U existující lokální databáze vytvořené pomocí `prisma db push` nejdřív označte
+úvodní migraci jako aplikovanou a potom spusťte zbývající migrace:
+
+```bash
+DATABASE_URL=file:./prisma/dev.db npx prisma migrate resolve --applied 20260518064216_init
+DATABASE_URL=file:./prisma/dev.db npx prisma migrate deploy
 ```
 
 Pro produkční režim:

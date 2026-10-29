@@ -91,6 +91,30 @@ describe("priceForPeriod", () => {
     expect(r!.unitCost).toBeLessThan(7300); // lower than flat-20
   });
 
+  it("applies each tariff to consumption measured within its dates", () => {
+    const readings = [
+      { id: 1, date: d("2026-01-01"), value: 0 },
+      { id: 2, date: d("2026-02-01"), value: 100 },
+      { id: 3, date: d("2026-03-01"), value: 100 },
+    ];
+    const tariffs = [
+      { validFrom: d("2026-01-01"), unitPrice: 1, monthlyFee: 0 },
+      { validFrom: d("2026-02-01"), unitPrice: 10, monthlyFee: 0 },
+    ];
+    const result = priceForPeriod(
+      readings,
+      tariffs,
+      d("2026-01-01"),
+      d("2026-03-01"),
+    );
+
+    expect(result?.segments.map((segment) => segment.consumption)).toEqual([100, 0]);
+    expect(result?.unitCost).toBe(100);
+    const monthPrices = monthlyConsumption(readings, d("2026-01-01"), d("2026-03-01"))
+      .map((month) => priceForPeriod(readings, tariffs, month.start, month.end)?.total ?? 0);
+    expect(monthPrices.reduce((sum, price) => sum + price, 0)).toBe(result?.total);
+  });
+
   it("returns null when no tariffs exist, so the price is unknown, not 0 Kč", () => {
     expect(priceForPeriod(readings, [], d("2026-01-01"), d("2026-12-31"))).toBeNull();
   });
