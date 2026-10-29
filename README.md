@@ -2,6 +2,21 @@
 
 Lokální webová aplikace pro evidenci odečtů energií — náhrada za ruční vedení v Excelu.
 
+## Ukázky aplikace
+
+Snímky používají smyšlená data.
+
+<p>
+  <a href="screenshots/01-prehled.png"><img src="screenshots/01-prehled.png" alt="Přehled" width="32%"></a>
+  <a href="screenshots/02-odecyty.png"><img src="screenshots/02-odecyty.png" alt="Historie odečtů" width="32%"></a>
+  <a href="screenshots/06-novy-odecet.png"><img src="screenshots/06-novy-odecet.png" alt="Formulář nového odečtu" width="32%"></a>
+</p>
+<p>
+  <a href="screenshots/03-merice.png"><img src="screenshots/03-merice.png" alt="Přehled měřičů" width="32%"></a>
+  <a href="screenshots/04-sazby.png"><img src="screenshots/04-sazby.png" alt="Sazby a ceny" width="32%"></a>
+  <a href="screenshots/05-souhrny-2026.png"><img src="screenshots/05-souhrny-2026.png" alt="Roční souhrny a grafy" width="32%"></a>
+</p>
+
 ## Co umí
 
 - Eviduje libovolný počet měřičů (elektřina, studená/teplá voda, teplo) a jejich stavy v čase.
